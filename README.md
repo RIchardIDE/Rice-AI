@@ -52,8 +52,18 @@ cd rice-ai-web
 ```
 ### 2. Install SQL
 import rice_ai.sql<br>
-เปิด query run  2 คำสั่งนี้<br>
-2.1 สมาชิก รหัสคือ 1234 ทั้งหมด<br>
+เปิด query run  3 คำสั่งนี้<br>
+2.1 <br>
+```bash
+DROP USER IF EXISTS 'rice_admin'@'localhost';
+
+CREATE USER 'rice_admin'@'localhost' IDENTIFIED BY 'rice1234';
+
+GRANT ALL PRIVILEGES ON rice_ai.* TO 'rice_admin'@'localhost';
+
+FLUSH PRIVILEGES;
+```
+2.2 สมาชิก รหัสคือ 1234 ทั้งหมด<br>
 🔑 ข้อมูลสำหรับ Login ทดสอบระบบ<br>
   Admin: admin / 1234<br>
   Expert: doctor1 / 1234<br>
@@ -65,7 +75,7 @@ INSERT INTO `users` (`id`, `username`, `password`, `first_name`, `last_name`, `e
 (2, 'doctor1', '$2a$12$PU5VszXO3UCJ4tM0t.5ePOa6QD6I0zmFa2biuVMFvz9r9gVIUWyDi', 'Rice', 'Expert', 'doctor1@riceai.com', NULL, NULL, 'expert', '2026-02-08 22:24:00', NULL),
 (3, 'farmer1', '$2a$12$PU5VszXO3UCJ4tM0t.5ePOa6QD6I0zmFa2biuVMFvz9r9gVIUWyDi', 'Somchai', 'Farmer', 'somchai@gmail.com', NULL, NULL, 'farmer', '2026-02-08 22:24:00', NULL);
 ```
-2.2 คลังความรู้
+2.3 คลังความรู้
 ```bash
 INSERT INTO articles (id, title, description, category, content, thumbnail, views, created_at) VALUES
 
@@ -196,6 +206,13 @@ pip install -r requirements.txt
 ```bash
 (.venv)PS E:\rice-ai-web> 
 # แล้วสั่ง 
+npm start 
+```
+```bash
+(.venv)PS E:\rice-ai-web> 
+# แล้วสั่ง
+```
+```bash
 npm start 
 ```
 ### หน้าแรกคือหน้า index.html 
