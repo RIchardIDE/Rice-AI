@@ -209,12 +209,9 @@ pip install -r requirements.txt
 npm start 
 ```
 ```bash
-(.venv)PS E:\rice-ai-web> 
-# แล้วสั่ง
-```
-```bash
 npm start 
 ```
+หากเปิดโปรแกรมใหม่ต้องเปิด PowerShell ใหม่ทุกครั้ง 
 ### หน้าแรกคือหน้า index.html 
 
 
