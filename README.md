@@ -181,6 +181,7 @@ python -m venv venv
 # ติดตั้ง Library
 pip install -r requirements.txt
 ```
+ถ้า download error ให้ติดตั้ง python ver 3.10
 #### ถ้าหากใน package.json ยังไม่มีบรรทัดนี้ 
 ```bash
 "start": "concurrently \"npm run server\" \"npm run dev\""
