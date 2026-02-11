@@ -55,9 +55,9 @@ import rice_ai.sql<br>
 เปิด query run  2 คำสั่งนี้<br>
 2.1 สมาชิก รหัสคือ 1234 ทั้งหมด<br>
 🔑 ข้อมูลสำหรับ Login ทดสอบระบบ<br>
-  Admin: admin / 1234L<br>
-  Expert: doctor1 / 1234L<br>
-  Farmer: farmer1 / 1234L<br>
+  Admin: admin / 1234<br>
+  Expert: doctor1 / 1234<br>
+  Farmer: farmer1 / 1234<br>
 
 ```bash
 INSERT INTO `users` (`id`, `username`, `password`, `first_name`, `last_name`, `email`, `phone`, `address`, `role`, `created_at`, `profile_image`) VALUES
