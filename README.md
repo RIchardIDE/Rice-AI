@@ -146,6 +146,6 @@ pip install -r requirements.txt
 # แล้วสั่ง 
 npm start 
 ```
-
+### หน้าแรกคือหน้า index.html 
 
 
