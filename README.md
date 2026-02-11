@@ -211,7 +211,8 @@ npm start
 ```bash
 npm start 
 ```
-หากเปิดโปรแกรมใหม่ต้องเปิด PowerShell ใหม่ทุกครั้ง 
-### หน้าแรกคือหน้า index.html 
+### หน้าแรกคือหน้า index.html <br>
+### หากเปิดโปรแกรมใหม่ต้องเปิด PowerShell ใหม่ทุกครั้ง <br>
+### ถ้า ❌ Database Connection Failed: Access denied for user 'rice_admin'@'localhost' (using password: YES) ให้ query คำสั่ง 2.1 อีกทีครับ
 
 
