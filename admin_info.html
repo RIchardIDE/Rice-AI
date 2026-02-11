@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rice AI - รายละเอียดเคส</title>
+
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Noto Sans Thai"', 'sans-serif'] },
+                    colors: { rice_green: '#16a34a', rice_bg: '#E8F3EA' }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+
+    <aside class="hidden lg:flex w-64 bg-white shadow-lg fixed inset-y-0 left-0 z-40 flex-col justify-between">
+        <div>
+            <div class="h-[80px] flex items-center px-6 border-b border-gray-50 mb-6 cursor-pointer" onclick="window.location.href='admin.html'">
+                <img src="/image/logo.png" alt="Rice AI" class="h-8 w-auto mr-2" />
+                <span class="font-bold text-lg text-black">Rice AI Admin</span>
+            </div>
+            <nav class="px-4 space-y-1">
+                <a href="admin.html" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-rice_green hover:bg-green-50 rounded-xl transition font-bold">
+                    <i class="fa-solid fa-arrow-left w-5 text-center"></i> กลับหน้าภาพรวม
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-h-screen lg:ml-64 relative p-8">
+
+        <header class="flex items-center gap-4 mb-6">
+            <button onclick="window.location.href='admin.html'" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center hover:bg-gray-100 transition text-gray-500">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">รายละเอียดการตรวจสอบ</h1>
+                <p class="text-gray-500 text-xs mt-1">รหัสเคส: <span id="case-id" class="font-mono text-rice_green font-bold">...</span></p>
+            </div>
+        </header>
+
+        <div id="loading" class="text-center py-20 text-gray-400">
+            <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i><br>กำลังโหลดข้อมูล...
+        </div>
+
+        <div id="content-area" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="bg-white p-5 rounded-[20px] shadow-sm h-fit border border-gray-100">
+                <h3 class="font-bold text-gray-700 mb-3"><i class="fa-regular fa-image mr-2"></i>รูปภาพใบข้าว</h3>
+                <div class="rounded-xl overflow-hidden border border-gray-200 shadow-inner group relative bg-gray-100">
+                    <img id="detail-image" src="" class="w-full h-auto object-contain cursor-zoom-in" onclick="openFullImage()">
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <button onclick="openFullImage()" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 py-2.5 rounded-xl text-sm font-bold transition">
+                        <i class="fa-solid fa-expand mr-1"></i> ดูภาพขยาย
+                    </button>
+                    <a id="btn-download" href="#" download="rice_ai_image.jpg" class="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-600 py-2.5 rounded-xl text-sm font-bold transition text-center border border-gray-200">
+                        <i class="fa-solid fa-download mr-1"></i> ดาวน์โหลด
+                    </a>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                
+                <div class="bg-white p-6 rounded-[20px] shadow-sm relative overflow-hidden border border-gray-100">
+                    <div class="flex justify-between items-start mb-6 border-b border-gray-100 pb-4">
+                        <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center text-rice_green"><i class="fa-solid fa-stethoscope"></i></div>
+                            ผลการวินิจฉัย
+                        </h3>
+                        <span id="status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500">
+                            สถานะ: รอตรวจสอบ
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">AI วิเคราะห์ว่า</p>
+                            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                <h2 id="ai-disease" class="text-lg font-bold text-blue-800 mb-2">-</h2>
+                                <div class="flex items-center gap-3">
+                                    <div class="flex-1 h-2 bg-blue-200 rounded-full overflow-hidden">
+                                        <div id="ai-conf-bar" class="h-full bg-blue-600 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                    </div>
+                                    <span id="ai-conf-text" class="text-sm font-bold text-blue-600 min-w-[3rem] text-right">0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">ผู้เชี่ยวชาญยืนยัน</p>
+                            <div id="expert-box" class="bg-gray-50 p-4 rounded-xl border border-gray-200 border-dashed h-full flex flex-col justify-center">
+                                <h2 id="expert-disease" class="text-lg font-bold text-gray-400 mb-1">-</h2>
+                                <p id="expert-desc" class="text-xs text-gray-400">ยังไม่มีการยืนยันผล</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-gray-50">
+                        <p class="text-sm text-gray-500 font-bold mb-2"><i class="fa-regular fa-comment-dots mr-1"></i> คำแนะนำเพิ่มเติม:</p>
+                        <div id="expert-comment" class="bg-yellow-50/50 p-4 rounded-xl text-gray-600 text-sm leading-relaxed border border-yellow-100 min-h-[60px]">
+                            -
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-[20px] shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600"><i class="fa-solid fa-user-tag"></i></div>
+                        ข้อมูลเกษตรกร & พื้นที่
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 text-sm">
+                        <div class="flex gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-xs mb-0.5">เกษตรกร</p>
+                                <p id="user-name" class="font-bold text-gray-800 text-base">-</p>
+                                <p id="user-phone" class="text-gray-500 text-xs mt-0.5">-</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
+                                <i class="fa-solid fa-calendar-day"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-xs mb-0.5">วันที่บันทึก</p>
+                                <p id="date-time" class="font-bold text-gray-800 text-base">-</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
+                                <i class="fa-solid fa-seedling"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-xs mb-0.5">พันธุ์ข้าว</p>
+                                <span id="rice-variety" class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-md font-bold text-xs border border-yellow-200 inline-block">
+                                    -
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 shrink-0">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-xs mb-0.5">พิกัดแปลงนา</p>
+                                <p id="location-name" class="font-bold text-gray-800 mb-1 line-clamp-1">-</p>
+                                <a id="maps-link" href="#" target="_blank" class="text-blue-500 hover:text-blue-700 hover:underline text-xs flex items-center gap-1 hidden">
+                                    ดูบน Google Maps <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-95 hidden items-center justify-center z-50 p-4 transition-opacity duration-300" onclick="this.classList.add('hidden')">
+        <button class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300"><i class="fa-solid fa-xmark"></i></button>
+        <img id="modal-img-full" src="" class="max-w-full max-h-[95vh] rounded shadow-2xl transform transition-transform duration-300 scale-100">
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        
+        // Map พันธุ์ข้าว (ใช้ชุดเดียวกับหน้าอื่น)
+        const varietyMap = {
+            'kdm105': 'ข้าวดอกมะลิ 105', 'rd15': 'กข15 (หอมมะลิเร็ว)', 'rd43': 'กข43',
+            'pathum1': 'ปทุมธานี 1', 'rd6': 'กข6 (ข้าวเหนียว)', 'sanpatong': 'สันป่าตอง 1',
+            'rd41': 'กข41 (ต้านโรคไหม้)', 'rd85': 'กข85 (ต้านเพลี้ย)', 'other': 'พันธุ์อื่นๆ',
+            'unknown': 'ไม่ระบุพันธุ์ข้าว'
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const storedUser = localStorage.getItem('rice_user');
+            if (!storedUser) { window.location.href = 'index.html'; return; }
+            
+            const currentUser = JSON.parse(storedUser);
+            if (currentUser.role !== 'admin') { 
+                alert('สำหรับ Admin เท่านั้น');
+                window.location.href = 'home.html';
+                return;
+            }
+
+            // ✅ ดึง ID จาก LocalStorage (ที่หน้า admin.html ส่งมา)
+            const caseId = localStorage.getItem('admin_view_case_id');
+            
+            if (!caseId) {
+                alert('ไม่พบรหัสเคสที่ต้องการดู');
+                window.location.href = 'admin.html';
+                return;
+            }
+
+            document.getElementById('case-id').innerText = caseId;
+            loadCaseInfo(caseId);
+        });
+
+        async function loadCaseInfo(id) {
+            try {
+                // เรียก API ดึงข้อมูลรายเคส
+                const res = await fetch(`${API_URL}/case/${id}`);
+                const json = await res.json();
+
+                if (json.success) {
+                    renderData(json.data);
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('content-area').classList.remove('hidden');
+                    document.getElementById('content-area').classList.add('grid'); // restore grid layout
+                } else {
+                    alert('ไม่พบข้อมูลเคสนี้ในระบบ');
+                    window.location.href = 'admin.html';
+                }
+            } catch (err) {
+                console.error(err);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+            }
+        }
+
+        function renderData(data) {
+            // 1. รูปภาพ
+            document.getElementById('detail-image').src = data.image_base64;
+            document.getElementById('modal-img-full').src = data.image_base64;
+            document.getElementById('btn-download').href = data.image_base64;
+
+            // 2. ผล AI
+            document.getElementById('ai-disease').innerText = data.disease;
+            const conf = parseFloat(data.confidence) || 0;
+            document.getElementById('ai-conf-text').innerText = conf + '%';
+            document.getElementById('ai-conf-bar').style.width = conf + '%';
+            
+            const bar = document.getElementById('ai-conf-bar');
+            if(conf > 80) { bar.className = 'h-full rounded-full bg-green-500'; document.getElementById('ai-disease').className = 'text-lg font-bold text-green-700 mb-2'; }
+            else if(conf > 50) { bar.className = 'h-full rounded-full bg-yellow-500'; document.getElementById('ai-disease').className = 'text-lg font-bold text-yellow-700 mb-2'; }
+            else { bar.className = 'h-full rounded-full bg-red-500'; document.getElementById('ai-disease').className = 'text-lg font-bold text-red-700 mb-2'; }
+
+            // 3. ผล Expert (ปรับ UI ตามสถานะ)
+            if (data.expert_result) {
+                document.getElementById('expert-disease').innerText = data.expert_result;
+                document.getElementById('expert-disease').className = "text-lg font-bold text-green-700 mb-1";
+                document.getElementById('expert-desc').innerText = "ได้รับการยืนยันแล้ว";
+                
+                const expertBox = document.getElementById('expert-box');
+                expertBox.className = "bg-green-50 p-4 rounded-xl border border-green-200 h-full flex flex-col justify-center";
+                
+                document.getElementById('expert-comment').innerText = data.expert_comment || '-';
+                
+                document.getElementById('status-badge').className = "px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-600 border border-green-200";
+                document.getElementById('status-badge').innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> ตรวจสอบแล้ว';
+            } else {
+                document.getElementById('status-badge').className = "px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-600 border border-orange-200";
+                document.getElementById('status-badge').innerHTML = '<i class="fa-solid fa-clock mr-1"></i> รอผู้เชี่ยวชาญ';
+            }
+
+            // 4. ข้อมูลเกษตรกร
+            const userName = data.first_name ? `${data.first_name} ${data.last_name}` : 'ไม่ระบุชื่อ';
+            document.getElementById('user-name').innerText = userName;
+            // ถ้ามีเบอร์โทร (ต้องแก้ SQL เพิ่ม phone_number ถ้ายังไม่มี)
+            if(data.phone_number) document.getElementById('user-phone').innerText = data.phone_number;
+            
+            const date = new Date(data.timestamp);
+            document.getElementById('date-time').innerText = date.toLocaleString('th-TH', { dateStyle: 'long', timeStyle: 'short' });
+
+            // 5. พันธุ์ข้าว
+            const riceCode = data.variety_code || 'unknown';
+            document.getElementById('rice-variety').innerText = varietyMap[riceCode] || riceCode;
+
+            // 6. พิกัด
+            document.getElementById('location-name').innerText = data.location_name || 'ไม่ระบุพิกัด';
+            if (data.latitude && data.longitude) {
+                const mapsUrl = `http://googleusercontent.com/maps.google.com/3{data.latitude},${data.longitude}`;
+                const mapLink = document.getElementById('maps-link');
+                mapLink.href = mapsUrl;
+                mapLink.classList.remove('hidden');
+            }
+        }
+
+        function openFullImage() {
+            document.getElementById('image-modal').classList.remove('hidden');
+            document.getElementById('image-modal').classList.add('flex');
+        }
+    </script>
+</body>
+</html>

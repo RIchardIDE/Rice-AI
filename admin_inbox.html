@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>กล่องข้อความ - Rice AI Admin</title>
+
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#2E7D32', bg: '#E8F5E9' },
+                        rice_green: '#1A9E48',
+                        light_bg: '#F0F4F1',
+                        read_gray: '#F3F4F6'
+                    },
+                    fontFamily: { sans: ['"Noto Sans Thai"', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-light_bg text-gray-800 font-sans min-h-screen flex overflow-hidden">
+
+    <aside class="hidden lg:flex w-64 bg-white shadow-lg flex-col justify-between z-10">
+        <div>
+            <div class="h-[80px] flex items-center px-6 border-b border-gray-50 mb-6 cursor-pointer"
+                onclick="window.location.href='admin.html'">
+                <img src="/image/logo.png" alt="Rice AI" class="h-8 w-auto mr-2" />
+                <span class="font-bold text-lg text-black">Rice AI Admin</span>
+            </div>
+
+            <nav class="px-4 space-y-1">
+                <a href="admin.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-primary-bg rounded-xl transition font-bold">
+                    <i class="fa-solid fa-table-columns w-5 text-center"></i> ภาพรวม Dashboard
+                </a>
+                <a href="admin_user.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-primary-bg rounded-xl transition font-bold">
+                    <i class="fa-solid fa-users w-5 text-center"></i> จัดการผู้ใช้งาน
+                </a>
+                <a href="admin_stats.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-primary-bg rounded-xl transition font-bold">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> รายงานสถิติ
+                </a>
+
+                <div class="pt-4 pb-2 px-4 text-xs font-bold text-gray-400 uppercase">การจัดการเนื้อหา</div>
+                <a href="admin_knowledge.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-primary-bg rounded-xl transition font-bold">
+                    <i class="fa-solid fa-book w-5 text-center"></i> คลังความรู้
+                </a>
+
+                <a href="admin_inbox.html"
+                    class="flex items-center gap-3 px-4 py-3 text-rice_green bg-primary-bg rounded-xl transition font-bold justify-between shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-envelope w-5 text-center"></i> กล่องข้อความ
+                    </div>
+                    <span id="sidebar-unread-count"
+                        class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full hidden">0</span>
+                </a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-50">
+            <button onclick="logout()"
+                class="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition font-bold">
+                <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> ออกจากระบบ
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen p-4 lg:p-6 gap-4">
+
+        <header class="flex justify-between items-center mb-2">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">กล่องข้อความ (Inbox)</h1>
+                <p class="text-gray-500 text-sm">ข้อความจากผู้ใช้งาน และการแจ้งปัญหา</p>
+            </div>
+            <button onclick="loadMessages()" class="text-gray-500 hover:text-green-600 transition" title="รีเฟรช">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </header>
+
+        <div class="flex-1 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex">
+
+            <div class="w-full lg:w-1/3 border-r border-gray-100 flex flex-col bg-white">
+                <div class="p-4 border-b border-gray-100 bg-gray-50/50">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400 text-sm"></i>
+                        <input type="text" id="search-msg" onkeyup="filterMessages()"
+                            placeholder="ค้นหาชื่อ หรือ หัวข้อ..."
+                            class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-green-500 text-sm bg-white">
+                    </div>
+                </div>
+
+                <div id="message-list" class="flex-1 overflow-y-auto divide-y divide-gray-50">
+                    <div class="p-8 text-center text-gray-400 text-sm">กำลังโหลดข้อมูล...</div>
+                </div>
+            </div>
+
+            <div class="hidden lg:flex lg:w-2/3 flex-col bg-white relative" id="message-content-area">
+
+                <div id="no-selection" class="flex-1 flex flex-col items-center justify-center text-gray-300">
+                    <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa-regular fa-envelope-open text-3xl text-gray-300"></i>
+                    </div>
+                    <p>เลือกข้อความทางด้านซ้ายเพื่ออ่านรายละเอียด</p>
+                </div>
+                <div id="msg-detail" class="hidden flex-col h-full">
+                    <div class="p-6 border-b border-gray-100">
+                        <div class="flex justify-between items-start mb-2">
+                            <h2 id="view-subject" class="text-xl font-bold text-gray-800">หัวข้อเรื่อง...</h2>
+
+                            <div class="flex gap-2">
+                                <button onclick="openReplyModal()" id="btn-reply"
+                                    class="hidden bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm transition shadow-sm">
+                                    <i class="fa-solid fa-reply"></i> ตอบกลับ
+                                </button>
+
+                                <button onclick="deleteCurrentMessage()"
+                                    class="text-gray-400 hover:text-red-500 transition px-3 py-1 rounded-lg border border-transparent hover:border-gray-200"
+                                    title="ลบข้อความ">
+                                    <i class="fa-solid fa-trash-can text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 text-sm text-gray-500">
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-8">
+                        <h2 id="view-subject" class="text-2xl font-bold text-gray-800 mb-4">หัวข้อเรื่อง...</h2>
+
+                        <div class="flex items-center gap-4 mb-8">
+                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xl font-bold"
+                                id="view-avatar">A</div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <h4 id="view-sender" class="font-bold text-gray-800 text-lg">ชื่อผู้ส่ง</h4>
+                                    <span id="view-source"
+                                        class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">Guest</span>
+                                </div>
+                                <div class="text-sm text-gray-500 flex gap-3 mt-0.5">
+                                    <span id="view-date">วันที่ส่ง</span>
+                                    <span>•</span>
+                                    <span id="view-phone"><i class="fa-solid fa-phone text-xs"></i> -</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-gray-700 leading-relaxed whitespace-pre-wrap text-lg border-l-4 border-green-500 pl-4 py-2 bg-gray-50/30 rounded-r-lg"
+                            id="view-body">
+                            เนื้อหาข้อความ...
+                        </div>
+
+                        <div id="view-image-container" class="mt-8 hidden">
+                            <p class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wide">รูปภาพแนบ</p>
+                            <div class="inline-block relative group">
+                                <img id="view-image" src="" alt="Attached"
+                                    class="max-h-80 rounded-xl border border-gray-200 shadow-sm cursor-pointer transition hover:opacity-90"
+                                    onclick="window.open(this.src)">
+                                <div
+                                    class="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded pointer-events-none">
+                                    คลิกเพื่อขยาย</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="reply-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 transform transition-all scale-100">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-xl font-bold text-gray-800">ตอบกลับข้อความ</h3>
+                <button onclick="closeReplyModal()" class="text-gray-400 hover:text-gray-600"><i
+                        class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">ถึงสมาชิก:</label>
+                    <input type="text" id="reply-to-name" disabled
+                        class="w-full px-3 py-2 bg-gray-100 rounded-lg text-gray-500 border border-gray-200">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">หัวข้อแจ้งเตือน:</label>
+                    <input type="text" id="reply-title" placeholder="เช่น ตอบกลับเรื่อง..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">ข้อความ:</label>
+                    <textarea id="reply-message" rows="4" placeholder="พิมพ์ข้อความตอบกลับที่นี่..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 resize-none transition"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeReplyModal()"
+                    class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg font-bold transition">ยกเลิก</button>
+                <button onclick="sendReply()"
+                    class="px-6 py-2 bg-rice_green hover:bg-green-700 text-white rounded-lg font-bold shadow-sm transition">
+                    <i class="fa-regular fa-paper-plane"></i> ส่งข้อความ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let allMessages = [];
+        let currentMsgId = null;
+
+
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const storedUser = localStorage.getItem('rice_user');
+            if (!storedUser) { window.location.href = 'index.html'; return; }
+            currentUserInfo = JSON.parse(storedUser);
+            if (currentUserInfo.role !== 'admin') { alert('⛔ เฉพาะ Admin เท่านั้น'); window.location.href = 'home.html'; return; }
+            loadMessages();
+        });
+
+
+        async function loadMessages() {
+            const listEl = document.getElementById('message-list');
+            try {
+                listEl.innerHTML = '<div class="p-8 text-center text-gray-400 text-sm">กำลังโหลด...</div>';
+
+                const res = await fetch(`${API_URL}/admin/messages`);
+
+
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+                const json = await res.json();
+
+                if (json.success) {
+                    allMessages = json.data;
+                    renderList(allMessages);
+                    updateUnreadCount();
+                } else {
+                    listEl.innerHTML = `<div class="p-8 text-center text-red-400">เกิดข้อผิดพลาด: ${json.message}</div>`;
+                }
+            } catch (err) {
+                console.error("Load Message Error:", err);
+                listEl.innerHTML = `<div class="p-8 text-center text-red-400">
+                    <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i><br>
+                    โหลดข้อมูลไม่สำเร็จ<br>
+                    <span class="text-xs text-gray-400">กรุณาตรวจสอบว่ารัน Server หรือยัง?</span>
+                </div>`;
+            }
+        }
+
+
+        function renderList(messages) {
+            const listEl = document.getElementById('message-list');
+            listEl.innerHTML = '';
+
+            if (messages.length === 0) {
+                listEl.innerHTML = '<div class="p-8 text-center text-gray-400 text-sm flex flex-col items-center gap-2"><i class="fa-regular fa-folder-open text-2xl"></i><span>ไม่มีข้อความ</span></div>';
+                return;
+            }
+
+            messages.forEach(msg => {
+                const isUnread = msg.is_read === 0;
+
+                let sourceBadge = '';
+                if (msg.source && msg.source.includes('Member')) {
+                    sourceBadge = '<span class="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100 ml-2">สมาชิก</span>';
+                } else {
+                    sourceBadge = '<span class="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded border border-gray-200 ml-2">Guest</span>';
+                }
+
+                const div = document.createElement('div');
+                div.className = `p-4 cursor-pointer hover:bg-green-50/50 transition border-l-4 ${isUnread ? 'border-green-500 bg-green-50/30' : 'border-transparent'} relative group border-b border-gray-50`;
+                div.onclick = () => selectMessage(msg.id);
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <div class="flex items-center w-full overflow-hidden">
+                            <span class="text-sm ${isUnread ? 'font-bold text-gray-900' : 'font-medium text-gray-600'} truncate">${msg.sender_name}</span>
+                            ${sourceBadge}
+                        </div>
+                        <span class="text-[10px] text-gray-400 whitespace-nowrap ml-2">${new Date(msg.created_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })}</span>
+                    </div>
+                    <div class="text-sm text-gray-800 truncate mb-1 ${isUnread ? 'font-semibold' : ''}">${msg.subject}</div>
+                    <div class="text-xs text-gray-400 truncate">${msg.message}</div>
+                    ${isUnread ? '<div class="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 bg-green-500 rounded-full"></div>' : ''}
+                `;
+                listEl.appendChild(div);
+            });
+        }
+
+
+        let currentMsg = null;
+
+
+        async function selectMessage(id) {
+            currentMsgId = id;
+            const msg = allMessages.find(m => m.id === id);
+            if (!msg) return;
+            currentMsg = msg;
+
+
+            if (msg.is_read === 0) {
+                try {
+                    await fetch(`${API_URL}/admin/messages/read/${id}`, { method: 'PUT' });
+                    msg.is_read = 1;
+                    renderList(allMessages);
+                    updateUnreadCount();
+                } catch (e) { console.error(e); }
+            }
+
+
+            document.getElementById('no-selection').classList.add('hidden');
+            document.getElementById('msg-detail').classList.remove('hidden');
+            document.getElementById('msg-detail').classList.add('flex');
+
+            document.getElementById('view-subject').innerText = msg.subject;
+            document.getElementById('view-sender').innerText = msg.sender_name;
+            document.getElementById('view-avatar').innerText = msg.sender_name.charAt(0).toUpperCase();
+            document.getElementById('view-phone').innerHTML = `<i class="fa-solid fa-phone text-xs"></i> ${msg.phone || '-'}`;
+            document.getElementById('view-date').innerText = new Date(msg.created_at).toLocaleString('th-TH');
+            document.getElementById('view-body').innerText = msg.message;
+
+            const sourceEl = document.getElementById('view-source');
+            const btnReply = document.getElementById('btn-reply');
+
+            if (msg.source && msg.source.includes('Member')) {
+                // ถ้าเป็น Member: โชว์ปุ่มตอบกลับ
+                sourceEl.className = 'text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 border border-blue-200 font-bold';
+                sourceEl.innerText = 'สมาชิก (Member)';
+                btnReply.classList.remove('hidden');
+            } else {
+                // ถ้าเป็น Guest: ซ่อนปุ่มตอบกลับ 
+                sourceEl.className = 'text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200';
+                sourceEl.innerText = 'Guest (ทั่วไป)';
+                btnReply.classList.add('hidden');
+            }
+
+
+            const imgContainer = document.getElementById('view-image-container');
+            const imgEl = document.getElementById('view-image');
+            if (msg.image_path && msg.image_path !== 'null') {
+                imgContainer.classList.remove('hidden');
+                imgEl.src = `${API_URL}/uploads/${msg.image_path}`;
+            } else {
+                imgContainer.classList.add('hidden');
+            }
+        }
+
+
+        function openReplyModal() {
+            if (!currentMsg) return;
+            document.getElementById('reply-to-name').value = currentMsg.sender_name;
+            document.getElementById('reply-title').value = `ตอบกลับ: ${currentMsg.subject}`;
+            document.getElementById('reply-message').value = ''; // ล้างข้อความเก่า
+
+            document.getElementById('reply-modal').classList.remove('hidden');
+            document.getElementById('reply-modal').classList.add('flex');
+        }
+
+        function closeReplyModal() {
+            document.getElementById('reply-modal').classList.add('hidden');
+            document.getElementById('reply-modal').classList.remove('flex');
+        }
+
+        async function sendReply() {
+            const title = document.getElementById('reply-title').value;
+            const message = document.getElementById('reply-message').value;
+
+
+            const userId = currentMsg.user_id_from_db;
+
+            if (!userId) {
+                alert('ไม่พบข้อมูลสมาชิก (User ID) ไม่สามารถตอบกลับได้');
+                return;
+            }
+            if (!title || !message) {
+                alert('กรุณากรอกหัวข้อและข้อความ');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/admin/reply-message`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, title, message })
+                });
+                const json = await res.json();
+
+                if (json.success) {
+                    alert('✅ ส่งข้อความตอบกลับไปยังการแจ้งเตือนของสมาชิกแล้ว');
+                    closeReplyModal();
+                } else {
+                    alert('❌ เกิดข้อผิดพลาด: ' + json.message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Server Error: ส่งข้อความไม่สำเร็จ');
+            }
+        }
+
+        async function deleteCurrentMessage() {
+            if (!currentMsgId || !confirm('ต้องการลบข้อความนี้ใช่หรือไม่?')) return;
+            try {
+                const res = await fetch(`${API_URL}/admin/messages/${currentMsgId}`, { method: 'DELETE' });
+                const json = await res.json();
+                if (json.success) {
+                    document.getElementById('no-selection').classList.remove('hidden');
+                    document.getElementById('msg-detail').classList.add('hidden');
+                    document.getElementById('msg-detail').classList.remove('flex');
+                    currentMsgId = null;
+                    loadMessages();
+                }
+            } catch (e) { alert('ลบไม่สำเร็จ'); }
+        }
+
+
+        function filterMessages() {
+            const text = document.getElementById('search-msg').value.toLowerCase();
+            const filtered = allMessages.filter(m =>
+                m.sender_name.toLowerCase().includes(text) ||
+                m.subject.toLowerCase().includes(text) ||
+                (m.source && m.source.toLowerCase().includes(text))
+            );
+            renderList(filtered);
+        }
+
+
+        function updateUnreadCount() {
+            const count = allMessages.filter(m => m.is_read === 0).length;
+            const badge = document.getElementById('sidebar-unread-count');
+            if (count > 0) {
+                badge.innerText = count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function logout() { localStorage.removeItem('rice_user'); window.location.href = 'index.html'; }
+    </script>
+</body>
+
+</html>

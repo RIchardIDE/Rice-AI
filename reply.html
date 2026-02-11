@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rice AI - ตอบกลับข้อความ</title>
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Sarabun"', 'sans-serif'] },
+                    colors: { rice_green: '#16a34a' }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 min-h-screen font-sans flex flex-col">
+
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-2">
+                    <img src="/image/logo.png" alt="Logo" class="h-8 w-auto">
+                    <span class="font-bold text-lg text-gray-800">Rice AI Analysis</span>
+                </div>
+                <button onclick="window.history.back()" class="text-gray-500 hover:text-gray-800 text-sm font-bold flex items-center gap-1">
+                    <i class="fa-solid fa-xmark text-lg"></i> ยกเลิก
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex-grow flex flex-col items-center justify-start pt-8 pb-12 px-4">
+        
+        <div class="w-full max-w-2xl bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+            
+            <div class="bg-rice_green p-6 text-white">
+                <h1 class="text-2xl font-bold flex items-center gap-3">
+                    <i class="fa-solid fa-reply"></i> ตอบกลับข้อความ
+                </h1>
+                <p class="text-green-100 text-sm mt-1">ส่งรายละเอียดเพิ่มเติมถึงผู้เชี่ยวชาญหรือแอดมิน</p>
+            </div>
+
+            <div class="p-6 md:p-8 space-y-6">
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">หัวข้อเรื่อง (Subject)</label>
+                    <div class="relative">
+                        <input type="text" id="reply-subject" readonly
+                            class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-100 border border-gray-200 text-gray-600 font-bold focus:outline-none cursor-not-allowed">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
+                            <i class="fa-solid fa-tag"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">ชื่อผู้ติดต่อ</label>
+                        <input type="text" id="reply-name" placeholder="ชื่อของคุณ"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-rice_green focus:ring-2 focus:ring-green-100 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">เบอร์โทรศัพท์</label>
+                        <input type="tel" id="reply-phone" placeholder="เบอร์โทรศัพท์"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-rice_green focus:ring-2 focus:ring-green-100 outline-none transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">ข้อความของคุณ</label>
+                    <textarea id="reply-message" rows="6" placeholder="พิมพ์รายละเอียดที่ต้องการแจ้ง..."
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rice_green focus:ring-2 focus:ring-green-100 outline-none transition bg-gray-50 focus:bg-white resize-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">แนบรูปภาพประกอบ (ถ้ามี)</label>
+                    <input type="file" id="reply-file" class="hidden" accept="image/*" onchange="previewReplyFile()">
+                    
+                    <div onclick="document.getElementById('reply-file').click()" 
+                        class="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center text-gray-400 hover:border-rice_green hover:bg-green-50 transition cursor-pointer group relative h-32">
+                        
+                        <div id="upload-placeholder" class="flex flex-col items-center">
+                            <i class="fa-solid fa-camera text-2xl mb-2 group-hover:text-rice_green"></i>
+                            <span class="text-xs group-hover:text-rice_green">คลิกเพื่อเลือกรูปภาพ</span>
+                        </div>
+                        
+                        <img id="file-preview" class="hidden h-full object-contain absolute inset-0 m-auto p-2">
+                        <button id="clear-file-btn" onclick="clearFile(event)" class="hidden absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:scale-110 transition z-10"><i class="fa-solid fa-xmark text-xs"></i></button>
+                    </div>
+                </div>
+
+                <button onclick="sendReply()" 
+                    class="w-full bg-rice_green hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:-translate-y-1 flex justify-center items-center gap-2 text-lg">
+                    <i class="fa-solid fa-paper-plane"></i> ส่งข้อความ
+                </button>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 1. auto-fill หัวข้อเรื่อง
+            const urlParams = new URLSearchParams(window.location.search);
+            const subject = urlParams.get('subject');
+            if (subject) {
+                document.getElementById('reply-subject').value = subject;
+            } else {
+                document.getElementById('reply-subject').value = "ตอบกลับทั่วไป";
+            }
+
+            // 2. auto-fill ชื่อและเบอร์โทร
+            const storedUser = localStorage.getItem('rice_user');
+            if (storedUser) {
+                const user = JSON.parse(storedUser);
+                try {
+                    const res = await fetch(`${API_URL}/get-user-profile/${user.id}`);
+                    const json = await res.json();
+                    if (json.success) {
+                        const d = json.data;
+                        document.getElementById('reply-name').value = `${d.first_name || ''} ${d.last_name || ''}`.trim();
+                        document.getElementById('reply-phone').value = d.phone || '';
+                    }
+                } catch (e) { console.error(e); }
+            }
+        });
+
+        // ฟังก์ชัน Preview รูป
+        function previewReplyFile() {
+            const input = document.getElementById('reply-file');
+            const file = input.files[0];
+            const placeholder = document.getElementById('upload-placeholder');
+            const preview = document.getElementById('file-preview');
+            const clearBtn = document.getElementById('clear-file-btn');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                    clearBtn.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ฟังก์ชันลบรูปที่เลือก
+        function clearFile(event) {
+            event.stopPropagation(); 
+            document.getElementById('reply-file').value = '';
+            document.getElementById('file-preview').classList.add('hidden');
+            document.getElementById('upload-placeholder').classList.remove('hidden');
+            document.getElementById('clear-file-btn').classList.add('hidden');
+        }
+
+        // ฟังก์ชันส่งข้อมูล
+        async function sendReply() {
+            const name = document.getElementById('reply-name').value.trim();
+            const phone = document.getElementById('reply-phone').value.trim();
+            const subject = document.getElementById('reply-subject').value;
+            const message = document.getElementById('reply-message').value.trim();
+            const fileEl = document.getElementById('reply-file');
+
+            if (!name || !message) {
+                alert('กรุณากรอกชื่อและข้อความ');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('phone', phone);
+            formData.append('subject', subject);
+            formData.append('message', message);
+            formData.append('source', 'Reply Page'); 
+
+            if (fileEl.files.length > 0) formData.append('image', fileEl.files[0]);
+
+       
+            const btn = document.querySelector('button[onclick="sendReply()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังส่ง...';
+            btn.disabled = true;
+
+            try {
+
+                const res = await fetch(`${API_URL}/api/contact`, { method: 'POST', body: formData });
+                const json = await res.json();
+
+                if (json.success) {
+                    alert('✅ ส่งข้อความตอบกลับเรียบร้อยแล้ว');
+                    window.location.href = 'setting.html'; 
+                } else {
+                    alert('❌ เกิดข้อผิดพลาด: ' + json.message);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Server Error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rice AI Expert - ข้อมูลทั้งหมด</title>
+
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Noto Sans Thai"', 'sans-serif'] },
+                    colors: { rice_green: '#16a34a', rice_bg: '#E8F3EA' }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
+
+    <aside class="hidden lg:flex w-64 bg-white shadow-lg fixed inset-y-0 left-0 z-40 flex-col justify-between">
+        <div>
+            <div class="h-[80px] flex items-center px-6 border-b border-gray-50 mb-6">
+                <img src="/image/logo.png" alt="Rice AI" class="h-8 w-auto mr-2" />
+                <span class="font-bold text-lg text-black">Rice AI <span class="text-rice_green">Expert</span></span>
+            </div>
+
+            <nav class="px-4 space-y-1">
+                <a href="expert.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-green-50 rounded-xl transition font-bold">
+                    <i class="fa-solid fa-stethoscope w-5 text-center"></i> ตรวจสอบโรค
+                </a>
+
+                <a href="expert_history.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-green-50 rounded-xl transition font-bold">
+                    <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> ประวัติการตรวจสอบโรค
+                </a>
+
+                <a href="expert_all_cases.html" class="flex items-center gap-3 px-4 py-3 text-rice_green bg-green-50 rounded-xl transition font-bold shadow-sm">
+                    <i class="fa-solid fa-table-columns w-5 text-center"></i> ข้อมูลการวินิจฉัยทั้งหมด
+                </a>
+                
+                <a href="expert_stats.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-green-50 rounded-xl transition font-bold">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> รายงานสถิติ
+                </a>
+            </nav>
+        </div> 
+        
+        <div class="p-4 border-t border-gray-50">
+            <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition font-bold">
+                <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> ออกจากระบบ
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-h-screen lg:ml-64 relative p-8">
+
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">ข้อมูลการวินิจฉัยทั้งหมด</h1>
+                <p class="text-gray-500 text-sm mt-1">ประวัติการใช้งาน AI ของผู้ใช้งานทุกคน</p>
+            </div>
+        </header>
+
+        <div class="bg-white rounded-[20px] shadow-sm border border-gray-100 overflow-hidden min-h-[500px]">
+            
+            <div class="p-5 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center bg-gray-50/50 gap-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-list text-gray-400"></i>
+                    <span class="font-bold text-gray-700">รายการทั้งหมด (<span id="total-count">0</span>)</span>
+                </div>
+
+                <div class="flex gap-3 w-full md:w-auto">
+                    <div class="relative w-full md:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" id="searchInput" onkeyup="filterData()" 
+                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-rice_green transition" 
+                            placeholder="ค้นหาเกษตรกร, โรค, หรือพันธุ์ข้าว...">
+                    </div>
+
+                    <select id="sortSelect" onchange="filterData()" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none cursor-pointer">
+                        <option value="newest">📅 วันที่: ใหม่ -> เก่า</option>
+                        <option value="oldest">📅 วันที่: เก่า -> ใหม่</option>
+                        <option value="disease">🦠 ตามชนิดโรค (ก-ฮ)</option> <option value="variety">🌾 ตามพันธุ์ข้าว (ก-ฮ)</option> <option value="conf_high">⚡ ความมั่นใจ: สูง -> ต่ำ</option>
+                        <option value="conf_low">⚡ ความมั่นใจ: ต่ำ -> สูง</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="text-gray-500 border-b border-gray-200 font-bold bg-gray-50">
+                        <tr>
+                            <th class="p-4 pl-6">รูปภาพ</th>
+                            <th class="p-4">เกษตรกร</th>
+                            <th class="p-4">ผลจาก AI</th>
+                            <th class="p-4">แปลงนาที่ไหน</th>
+                            <th class="p-4">พันธุ์ข้าว</th> 
+                            <th class="p-4 text-right pr-6">วันที่บันทึก</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-cases-body" class="divide-y divide-gray-100 text-gray-700">
+                        <tr><td colspan="6" class="p-10 text-center text-gray-400"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="image-modal" class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-50 p-4 backdrop-blur-sm" onclick="this.classList.add('hidden')">
+        <img id="modal-img-full" src="" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl transition-transform transform scale-100">
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let currentUser = null;
+        let globalData = []; 
+
+        const varietyMap = {
+            'kdm105': 'ข้าวดอกมะลิ 105',
+            'rd15': 'กข15 (หอมมะลิเร็ว)',
+            'rd43': 'กข43',
+            'pathum1': 'ปทุมธานี 1',
+            'rd6': 'กข6 (ข้าวเหนียว)',
+            'sanpatong': 'สันป่าตอง 1',
+            'rd41': 'กข41 (ต้านโรคไหม้)',
+            'rd85': 'กข85 (ต้านเพลี้ย)',
+            'other': 'พันธุ์อื่นๆ',
+            'unknown': 'ไม่ระบุพันธุ์ข้าว'
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const storedUser = localStorage.getItem('rice_user');
+            if (!storedUser) { window.location.href = 'index.html'; return; }
+            currentUser = JSON.parse(storedUser);
+            
+            if (currentUser.role !== 'expert' && currentUser.role !== 'admin') {
+                alert('⛔ สำหรับผู้เชี่ยวชาญเท่านั้น');
+                window.location.href = 'home.html';
+                return;
+            }
+
+            loadAllCases();
+        });
+
+        async function loadAllCases() {
+            try {
+                const res = await fetch(`${API_URL}/expert/cases?filter=all`);
+                const json = await res.json();
+
+                if (json.success) {
+                    globalData = json.data;
+                    filterData(); 
+                } else {
+                    document.getElementById('all-cases-body').innerHTML = `<tr><td colspan="6" class="p-10 text-center text-red-400">โหลดข้อมูลไม่สำเร็จ</td></tr>`;
+                }
+
+            } catch (err) { 
+                console.error(err);
+                document.getElementById('all-cases-body').innerHTML = `<tr><td colspan="6" class="p-10 text-center text-red-400">Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        function filterData() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const sortBy = document.getElementById('sortSelect').value;
+            const tbody = document.getElementById('all-cases-body');
+
+            // 1. Search
+            let filtered = globalData.filter(item => {
+                const userName = (item.first_name + ' ' + item.last_name).toLowerCase();
+                const disease = (item.disease || '').toLowerCase();
+                const location = (item.location_name || '').toLowerCase();
+                const riceName = (varietyMap[item.variety_code] || item.variety_code || '').toLowerCase();
+
+                return userName.includes(searchText) || 
+                       disease.includes(searchText) || 
+                       location.includes(searchText) ||
+                       riceName.includes(searchText);
+            });
+
+            // 2. เรียงลำดับ (Sort)
+            filtered.sort((a, b) => {
+                const dateA = new Date(a.timestamp);
+                const dateB = new Date(b.timestamp);
+                const confA = parseFloat(a.confidence) || 0;
+                const confB = parseFloat(b.confidence) || 0;
+                
+                const diseaseA = (a.disease || '').toString();
+                const diseaseB = (b.disease || '').toString();
+                
+                const riceA = (varietyMap[a.variety_code] || a.variety_code || '').toString();
+                const riceB = (varietyMap[b.variety_code] || b.variety_code || '').toString();
+
+                if (sortBy === 'newest') return dateB - dateA;
+                if (sortBy === 'oldest') return dateA - dateB;
+                
+                if (sortBy === 'conf_high') return confB - confA;
+                if (sortBy === 'conf_low') return confA - confB;
+                
+
+                if (sortBy === 'disease') return diseaseA.localeCompare(diseaseB, 'th');
+                
+                if (sortBy === 'variety') return riceA.localeCompare(riceB, 'th');
+                
+                return 0;
+            });
+
+            // 3. แสดงผล
+            document.getElementById('total-count').innerText = filtered.length;
+            tbody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-20 text-center align-middle text-gray-400">ไม่พบข้อมูลที่ค้นหา</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const date = new Date(item.timestamp).toLocaleString('th-TH');
+                const userName = item.first_name ? `${item.first_name} ${item.last_name}` : 'ไม่ระบุชื่อ';
+                let confValue = parseFloat(item.confidence) || 0;
+                let confColor = 'text-green-600';
+                if(confValue < 50) confColor = 'text-red-500';
+                else if(confValue < 80) confColor = 'text-orange-500';
+
+                let locationDisplay = '-';
+                if (item.location_name) {
+                    locationDisplay = `<span class="font-bold text-gray-700 text-xs"><i class="fa-solid fa-location-dot text-rice_green mr-1"></i>${item.location_name}</span>`;
+                } else if (item.latitude && item.longitude) {
+                    locationDisplay = `<a href="http://googleusercontent.com/maps.google.com/?q=${item.latitude},${item.longitude}" target="_blank" class="text-blue-500 hover:underline text-xs"><i class="fa-solid fa-map-pin mr-1"></i>ดูพิกัด</a>`;
+                }
+
+                const riceCode = item.variety_code || 'unknown';
+                const riceName = varietyMap[riceCode] || riceCode; 
+
+                const row = `
+                    <tr class="hover:bg-gray-50 transition border-b border-gray-50 last:border-0">
+                        <td class="p-4 pl-6">
+                            <div class="w-12 h-12 rounded-lg overflow-hidden border border-gray-200 cursor-pointer shadow-sm hover:scale-110 transition" 
+                                 onclick="showImage('${item.image_base64}')">
+                                <img src="${item.image_base64}" class="w-full h-full object-cover">
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <div class="font-bold text-gray-800 text-sm">${userName}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-sm font-medium text-gray-700">${item.disease}</div>
+                            <div class="text-xs ${confColor} font-bold">มั่นใจ ${confValue}%</div>
+                        </td>
+                        <td class="p-4">
+                            ${locationDisplay}
+                        </td>
+                        <td class="p-4">
+                            <span class="bg-yellow-50 text-yellow-800 px-2 py-1 rounded text-xs font-bold border border-yellow-200 inline-flex items-center gap-1">
+                                <i class="fa-solid fa-seedling"></i> ${riceName}
+                            </span>
+                        </td>
+                        <td class="p-4 text-right pr-6 text-gray-400 text-xs">
+                            ${date}
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function showImage(src) {
+            const modal = document.getElementById('image-modal');
+            const img = document.getElementById('modal-img-full');
+            img.src = src;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function logout() { localStorage.removeItem('rice_user'); window.location.href = 'index.html'; }
+    </script>
+</body>
+</html>

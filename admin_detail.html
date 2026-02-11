@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>รายละเอียดการตรวจสอบ - Rice AI Admin</title>
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#2E7D32', bg: '#E8F5E9' },
+                        rice_green: '#1A9E48',
+                        light_bg: '#F0F4F1'
+                    },
+                    fontFamily: { sans: ['"Noto Sans Thai"', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-light_bg text-gray-800 font-sans min-h-screen p-6 flex justify-center items-center">
+
+    <div class="max-w-4xl w-full bg-white rounded-[20px] shadow-lg overflow-hidden relative">
+
+        <div class="bg-primary-bg px-8 py-4 flex justify-between items-center border-b border-green-100">
+            <h1 class="text-xl font-bold text-rice_green flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-list"></i> รายละเอียดการตรวจสอบ
+            </h1>
+            <button onclick="history.back()" class="text-gray-500 hover:text-gray-700 font-bold text-sm">
+                <i class="fa-solid fa-xmark text-lg"></i> ปิดหน้าต่าง
+            </button>
+        </div>
+
+        <div class="flex flex-col md:flex-row">
+
+            <div class="w-full md:w-1/2 bg-gray-100 p-6 flex items-center justify-center">
+                <div class="relative w-full h-80 rounded-xl overflow-hidden shadow-sm border border-gray-200 group">
+                    <img id="detail-img" src=""
+                        class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    <div class="absolute bottom-0 left-0 bg-black/50 text-white text-xs px-3 py-1">
+                        รูปถ่ายต้นฉบับ
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full md:w-1/2 p-8 space-y-6">
+
+                <div>
+                    <p class="text-gray-400 text-xs font-bold uppercase mb-1">ผลการวิเคราะห์ AI</p>
+                    <div class="flex items-center gap-4">
+                        <h2 id="detail-disease" class="text-3xl font-bold text-gray-800">-</h2>
+                        <span id="detail-confidence"
+                            class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold">0%</span>
+                    </div>
+                    <p id="detail-timestamp" class="text-sm text-gray-400 mt-1"><i class="fa-regular fa-clock"></i> ...
+                    </p>
+                </div>
+
+                <hr class="border-gray-100">
+
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-rice_green">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 font-bold">เกษตรกรผู้ส่งตรวจ</p>
+                            <p id="detail-user" class="font-bold text-gray-700">-</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-500">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 font-bold">สถานที่แปลงนา</p>
+                            <p id="detail-location" class="font-bold text-gray-700 leading-tight">-</p>
+                            <p id="detail-coords"
+                                class="text-xs text-gray-400 mt-0.5 font-mono cursor-pointer hover:text-blue-500"
+                                onclick="openMap()">
+                                (ดูบน Google Maps)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6 mt-auto">
+                    <button onclick="deleteCase()"
+                        class="w-full border border-red-200 text-red-500 hover:bg-red-50 font-bold py-3 rounded-xl transition">
+                        <i class="fa-regular fa-trash-can"></i> ลบรายการนี้
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let currentLat = 0, currentLng = 0;
+        
+
+        let currentCaseId = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const storedUser = localStorage.getItem('rice_user');
+            if (!storedUser || JSON.parse(storedUser).role !== 'admin') {
+                window.location.href = 'index.html'; return;
+            }
+
+            const caseId = localStorage.getItem('admin_view_case_id');
+            if (!caseId) { history.back(); return; }
+
+         
+            currentCaseId = caseId; 
+
+            await loadCaseDetail(caseId);
+        });
+
+        async function loadCaseDetail(id) {
+            try {
+                
+                const res = await fetch(`${API_URL}/admin/get-case-detail/${id}`);
+                const json = await res.json();
+
+                if (json.success) {
+                    const data = json.data;
+
+                    
+                    document.getElementById('detail-img').src = data.image_base64;
+                    document.getElementById('detail-disease').innerText = data.disease;
+
+                   
+                    const d = data.disease;
+                    const title = document.getElementById('detail-disease');
+                    if (d.includes('ไหม้')) title.className = "text-3xl font-bold text-red-600";
+                    else if (d.includes('ปกติ')) title.className = "text-3xl font-bold text-green-600";
+                    else title.className = "text-3xl font-bold text-yellow-600";
+
+                    document.getElementById('detail-confidence').innerText = `ความมั่นใจ ${data.confidence}`;
+                    document.getElementById('detail-timestamp').innerText = new Date(data.timestamp).toLocaleString('th-TH');
+
+                    document.getElementById('detail-user').innerText = `${data.first_name} ${data.last_name}`;
+                    document.getElementById('detail-location').innerText = data.location_name || 'ไม่ระบุพิกัด';
+
+                    currentLat = data.latitude;
+                    currentLng = data.longitude;
+                }
+
+            } catch (e) { console.error(e); alert('โหลดข้อมูลไม่สำเร็จ'); }
+        }
+
+        function openMap() {
+            if (currentLat && currentLng) {
+                window.open(`https://www.google.com/maps?q=${currentLat},${currentLng}`, '_blank');
+            } else {
+                alert('ไม่มีข้อมูลพิกัด GPS');
+            }
+        }
+
+        async function deleteCase() {
+
+            console.log("Deleting Case ID:", currentCaseId); 
+
+            if (!currentCaseId) {
+                alert("ไม่พบรหัสรายการ (กรุณารีเฟรชหน้าเว็บ)");
+                return;
+            }
+
+            if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้? การกระทำนี้ไม่สามารถย้อนกลับได้")) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/admin/case/${currentCaseId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const json = await res.json();
+
+                if (json.success) {
+                    alert('✅ ลบรายการสำเร็จ');
+                    localStorage.removeItem('admin_view_case_id');
+                    window.location.href = 'admin.html';
+                } else {
+                    alert('❌ ไม่สามารถลบรายการได้: ' + (json.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error deleting case:', error);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+            }
+        }
+        
+    </script>
+</body>
+
+</html>

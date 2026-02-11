@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>อ่านบทความ - Rice AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    
+    <link rel="stylesheet" href="./src/style.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Noto Sans Thai"', 'sans-serif'] },
+                    colors: { 
+                        rice_green: '#1A9E48', 
+                        rice_dark: '#147a37',
+                        bg_soft: '#F3F4F6' 
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -2px rgba(0, 0, 0, 0.03)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .fade-up { animation: fadeUp 0.6s ease-out; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+
+<body class="bg-bg_soft font-sans text-gray-700 min-h-screen flex flex-col">
+
+    <nav class="bg-white py-4 border-b border-gray-100 sticky top-0 z-40">
+        <div class="container mx-auto px-4 md:px-8 max-w-5xl flex justify-between items-center">
+            <a href="knowledge.html" class="group flex items-center gap-2 text-gray-500 font-medium text-sm hover:text-rice_green transition">
+                <i class="fa-solid fa-chevron-left text-xs group-hover:-translate-x-1 transition-transform"></i> คลังความรู้
+            </a>
+            <a href="home.html" class="flex items-center gap-2 opacity-60 hover:opacity-100 transition">
+                <img src="/image/logo.png" alt="Rice AI" class="h-6 w-auto" />
+            </a>
+        </div>
+    </nav>
+
+    <main class="flex-1 w-full py-8 md:py-12 px-4">
+        
+        <div id="loading" class="flex flex-col items-center justify-center py-32 text-gray-400">
+            <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-rice_green/50"></i>
+            <p class="text-sm">กำลังโหลด...</p>
+        </div>
+
+        <article id="article-content" class="hidden max-w-4xl mx-auto bg-white rounded-2xl shadow-card overflow-hidden border border-gray-50/50 fade-up">
+            
+            <div class="w-full h-[250px] md:h-[380px] bg-gray-100 relative overflow-hidden">
+                <img id="view-image" src="" alt="Cover Image" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none"></div>
+            </div>
+
+            <div class="p-6 md:p-10 lg:px-14">
+                
+                <header class="mb-8 border-b border-gray-100 pb-6">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                        <span id="view-category" class="inline-block bg-green-50 text-rice_green text-xs font-bold px-3 py-1.5 rounded-lg tracking-wider uppercase">
+                            -
+                        </span>
+                        <div class="flex items-center text-xs text-gray-400 gap-3">
+                             <span><i class="fa-regular fa-calendar mr-1"></i> <span id="view-date">-</span></span>
+                             <span><i class="fa-regular fa-eye mr-1"></i> <span id="view-views">0</span></span>
+                        </div>
+                    </div>
+
+                    <h1 id="view-title" class="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 leading-snug">
+                        -
+                    </h1>
+                </header>
+
+                <div id="view-body" class="prose prose-green max-w-none prose-headings:text-gray-800 prose-a:text-rice_green prose-img:rounded-xl leading-relaxed">
+                    </div>
+
+                <div class="mt-12 pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                        <p class="text-xs text-gray-400 font-medium uppercase mb-2">สนับสนุนโดย</p>
+                        <div class="flex items-center gap-2">
+                            <img src="/image/logo.png" class="h-6 w-auto grayscale opacity-50">
+                            <span class="text-sm font-bold text-gray-500">Rice AI Project</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex items-center gap-2 text-sm font-bold text-rice_green hover:text-rice_dark transition bg-green-50 px-4 py-2 rounded-lg">
+                        <i class="fa-solid fa-arrow-up"></i> กลับขึ้นด้านบน
+                    </button>
+                </div>
+
+            </div>
+        </article>
+
+        <div id="error-msg" class="hidden flex flex-col items-center justify-center py-32 text-center">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 text-2xl mb-4">
+                <i class="fa-solid fa-unlink"></i>
+            </div>
+            <h2 class="text-lg font-bold text-gray-700 mb-2">ไม่พบข้อมูล</h2>
+            <a href="knowledge.html" class="text-sm text-rice_green font-medium hover:underline">กลับหน้าคลังความรู้</a>
+        </div>
+
+    </main>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+
+            if (!id) {
+                window.location.href = 'knowledge.html';
+                return;
+            }
+
+            await loadArticleDetail(id);
+        });
+
+        async function loadArticleDetail(id) {
+            try {
+                // 1. เพิ่มยอดวิว
+                fetch(`${API_URL}/articles/increment-view/${id}`, { method: 'PUT' });
+
+                // 2. ดึงข้อมูลบทความมาแสดง 
+                const res = await fetch(`${API_URL}/admin/articles/${id}`);
+                const json = await res.json();
+
+                document.getElementById('loading').classList.add('hidden');
+
+                if (json.success) {
+                    renderData(json.data);
+                } else {
+                    document.getElementById('error-msg').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error("Error:", err);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('error-msg').classList.remove('hidden');
+            }
+        }
+        
+        function renderData(item) {
+            document.getElementById('article-content').classList.remove('hidden');
+
+            const imgUrl = item.thumbnail ? `${API_URL}/uploads/${item.thumbnail}` : '/image/logo.png';
+            document.getElementById('view-image').src = imgUrl;
+            document.getElementById('view-title').innerText = item.title;
+            document.getElementById('view-body').innerHTML = item.content.replace(/\n/g, '<br>');
+
+
+            const date = new Date(item.created_at).toLocaleDateString('th-TH', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+            document.getElementById('view-date').innerText = date;
+            document.getElementById('view-views').innerText = item.views.toLocaleString();
+
+
+            const catEl = document.getElementById('view-category');
+            const catMap = {
+                'disease': { name: 'โรคข้าว', bg: 'bg-red-50', text: 'text-red-600' },
+                'pest': { name: 'ศัตรูพืช', bg: 'bg-orange-50', text: 'text-orange-600' },
+                'fertilizer': { name: 'ปุ๋ย/สารอาหาร', bg: 'bg-blue-50', text: 'text-blue-600' },
+                'care': { name: 'การดูแลรักษา', bg: 'bg-green-50', text: 'text-rice_green' }
+            };
+            const catInfo = catMap[item.category] || { name: item.category, bg: 'bg-gray-100', text: 'text-gray-600' };
+            
+            catEl.innerText = catInfo.name;
+            catEl.className = `inline-block ${catInfo.bg} ${catInfo.text} text-xs font-bold px-3 py-1.5 rounded-lg tracking-wider uppercase`;
+        }
+    </script>
+
+</body>
+</html>

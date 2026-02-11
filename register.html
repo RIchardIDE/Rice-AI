@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rice AI - สร้างบัญชีใหม่</title>
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-primary-bg min-h-screen w-full font-sans flex items-center justify-center p-4">
+
+    <div
+        class="bg-white w-full max-w-[1200px] min-h-[700px] flex flex-col md:flex-row rounded-[40px] shadow-2xl overflow-hidden">
+
+        <div class="hidden md:block w-1/2 relative bg-gray-200">
+            <img src="./image/regis.png" alt="Rice Field" class="absolute inset-0 w-full h-full object-cover " />
+            <div
+                class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none">
+            </div>
+        </div>
+
+        <div class="w-full md:w-1/2 flex flex-col justify-center items-center px-8 py-10 relative">
+
+            <div class="absolute top-6 right-6 md:top-8 md:right-10 z-10">
+                <a href="login.html"
+                    class="font-bold text-sm md:text-base text-gray-900 hover:text-green-600 transition border-b-2 border-transparent hover:border-green-600 pb-0.5">
+                    เข้าสู่ระบบ
+                </a>
+            </div>
+
+            <div class="w-full max-w-md mt-4">
+
+                <div class="mb-10 text-center md:text-left">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">สร้างบัญชีผู้ใช้ใหม่
+                    </h2>
+                </div>
+
+                <form class="space-y-6">
+                    <div>
+                        <label class="block text-green-800 text-sm font-bold mb-2">ชื่อผู้ใช้ (Username)</label>
+                        <div class="relative">
+                            <input type="text" id="username" placeholder="ตั้งชื่อผู้ใช้" required
+                                class="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition font-medium text-base " />
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-primary">
+                                <i class="fa-solid fa-user text-lg"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label class="block text-green-800 text-sm font-bold mb-2">ชื่อจริง</label>
+                            <div class="relative">
+                                <input type="text" id="first_name" required placeholder="สมชาย"
+                                    class="w-full pl-10 pr-4 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition font-medium text-base " />
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
+                                    <i class="fa-solid fa-id-card text-lg"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="w-1/2">
+                            <label class="block text-green-800 text-sm font-bold mb-2">นามสกุล</label>
+                            <div class="relative">
+                                <input type="text" id="last_name" required placeholder="ใจดี"
+                                    class="w-full pl-10 pr-4 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition font-medium text-base " />
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
+                                    <i class="fa-solid fa-id-card text-lg"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label class="block text-green-800 text-sm font-bold mb-2">อีเมล</label>
+                            <div class="relative">
+                                <input type="email" id="email" placeholder="กรอกอีเมลของคุณ"
+                                    class="w-full pl-10 pr-4 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition font-medium text-base " />
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
+                                    <i class="fa-solid fa-envelope text-lg"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="w-1/2">
+                            <label class="block text-green-800 text-sm font-bold mb-2">เบอร์โทรศัพท์</label>
+                            <div class="relative">
+                                <input type="text" id="phone" required placeholder="08XXXXXXXX"
+                                    class="w-full pl-10 pr-4 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition font-medium text-base " />
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
+                                    <i class="fa-solid fa-phone text-lg"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-green-800 text-sm font-bold mb-2">รหัสผ่าน</label>
+                        <div class="relative">
+                            <input type="password" id="password" placeholder="กรอกรหัสผ่านของคุณ"
+                                class="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition font-medium text-base" />
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-primary">
+                                <i class="fa-solid fa-lock text-lg"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-green-800 text-sm font-bold mb-2">ยืนยันรหัสผ่าน</label>
+                        <div class="relative">
+                            <input type="password" id="confirm_password" placeholder="ยืนยันรหัสผ่านของคุณอีกครั้ง"
+                                class="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition font-medium text-base " />
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-primary">
+                                <i class="fa-solid fa-lock text-lg"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start pt-2">
+                        <div class="flex items-center h-5">
+                            <input id="terms" type="checkbox"
+                                class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-green-200 accent-[#10B981] cursor-pointer" />
+                        </div>
+                        <label for="terms" class="ml-2 text-sm font-medium text-gray-500 cursor-pointer">
+                            ฉันยอมรับ <button type="button" onclick="openModal('modal-terms')"
+                                class="text-[#10B981] hover:underline font-bold focus:outline-none">เงื่อนไขการให้บริการ</button>
+                            และ
+                            <button type="button" onclick="openModal('modal-privacy')"
+                                class="text-[#10B981] hover:underline font-bold focus:outline-none">นโยบายความเป็นส่วนตัว</button>
+                        </label>
+                    </div>
+
+                    <button type="button" id="reg-btn"
+                        class="w-full bg-primary hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-lg">
+                        สร้างบัญชีผู้ใช้งาน
+                    </button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="modal-terms" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+        aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true"
+                onclick="closeModal('modal-terms')"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+                class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-xl leading-6 font-bold text-gray-900 mb-4 border-b pb-2" id="modal-title">
+                        เงื่อนไขการให้บริการ (Terms of Service)
+                    </h3>
+                    <div class="mt-2 text-sm text-gray-600 space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                        <p><strong>1. บทนำ</strong><br>ยินดีต้อนรับสู่ Rice AI
+                            การใช้งานแพลตฟอร์มนี้ถือว่าท่านยอมรับข้อกำหนดและเงื่อนไขเหล่านี้ทั้งหมด หากไม่ยอมรับ
+                            กรุณาระงับการใช้งานทันที</p>
+
+                        <p><strong>2. การใช้งานระบบ</strong><br>
+                            - ท่านต้องให้ข้อมูลที่เป็นความจริงในการสมัครสมาชิก<br>
+                            - ห้ามนำระบบไปใช้ในทางที่ผิดกฎหมาย หรือรบกวนการทำงานของระบบ<br>
+                            - Rice AI เป็นเครื่องมือช่วยวินิจฉัยโรคเบื้องต้นเท่านั้น
+                            ผลลัพธ์ที่ได้ควรใช้ประกอบการตัดสินใจร่วมกับผู้เชี่ยวชาญ</p>
+
+                        <p><strong>3. ทรัพย์สินทางปัญญา</strong><br>ข้อมูล รูปภาพ
+                            และซอร์สโค้ดทั้งหมดในเว็บไซต์นี้เป็นลิขสิทธิ์ของ Rice AI
+                            ห้ามคัดลอกหรือดัดแปลงโดยไม่ได้รับอนุญาต</p>
+
+                        <p><strong>4. การจำกัดความรับผิด</strong><br>เราพยายามให้ข้อมูลที่แม่นยำที่สุด
+                            แต่ไม่ขอรับผิดชอบต่อความเสียหายใดๆ ที่เกิดจากการนำผลวิเคราะห์ไปใช้งานจริงในแปลงเกษตร</p>
+
+                        <p><strong>5.
+                                การระงับบัญชี</strong><br>เราขอสงวนสิทธิ์ในการระงับบัญชีผู้ใช้งานที่ละเมิดกฎระเบียบโดยไม่ต้องแจ้งให้ทราบล่วงหน้า
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="closeModal('modal-terms')"
+                        class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        รับทราบ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-privacy" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title"
+        role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true"
+                onclick="closeModal('modal-privacy')"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+                class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-xl leading-6 font-bold text-gray-900 mb-4 border-b pb-2">
+                        นโยบายความเป็นส่วนตัว (Privacy Policy)
+                    </h3>
+                    <div class="mt-2 text-sm text-gray-600 space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                        <p><strong>1. ข้อมูลที่เราเก็บรวบรวม</strong><br>
+                            - ข้อมูลส่วนตัว: ชื่อ, นามสกุล, อีเมล, เบอร์โทรศัพท์<br>
+                            - ข้อมูลการใช้งาน: รูปภาพโรคข้าวที่ท่านอัปโหลด, ประวัติการวินิจฉัย</p>
+
+                        <p><strong>2. การนำข้อมูลไปใช้</strong><br>
+                            - เพื่อให้บริการวินิจฉัยโรคข้าวและบันทึกประวัติ<br>
+                            - เพื่อพัฒนาความแม่นยำของ AI (รูปภาพของท่านอาจถูกนำไปใช้เทรนระบบ โดยไม่ระบุตัวตน)<br>
+                            - เพื่อติดต่อสื่อสารและแจ้งข่าวสารสำคัญ</p>
+
+                        <p><strong>3.
+                                การเปิดเผยข้อมูล</strong><br>เราจะไม่ขายหรือเผยแพร่ข้อมูลส่วนตัวของท่านให้บุคคลภายนอก
+                            ยกเว้นกรณีที่ต้องปฏิบัติตามกฎหมาย</p>
+
+                        <p><strong>4. ความปลอดภัย</strong><br>เรามีมาตรการรักษาความปลอดภัยข้อมูลตามมาตรฐาน
+                            เพื่อป้องกันการเข้าถึงโดยไม่ได้รับอนุญาต</p>
+
+                        <p><strong>5. สิทธิ์ของผู้ใช้งาน</strong><br>ท่านสามารถขอดู แก้ไข
+                            หรือลบข้อมูลส่วนตัวของท่านออกจากระบบได้ โดยติดต่อทีมงาน Rice AI</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="closeModal('modal-privacy')"
+                        class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        รับทราบ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+
+        // ฟังก์ชันจัดการ Modal
+        function openModal(modalID) {
+            document.getElementById(modalID).classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalID) {
+            document.getElementById(modalID).classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        document.getElementById('reg-btn').addEventListener('click', handleRegister);
+
+        async function handleRegister(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('reg-btn');
+            const originalText = btn.innerText;
+
+            const username = document.getElementById('username').value;
+            const firstName = document.getElementById('first_name').value.trim();
+            const lastName = document.getElementById('last_name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value;
+            const confirm_password = document.getElementById('confirm_password').value;
+            const terms = document.getElementById('terms').checked;
+
+            // ตรวจสอบข้อมูล
+            if (!username || !firstName || !lastName || !email || !phone || !password) {
+                alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+                return;
+            }
+            if (password !== confirm_password) {
+                alert('❌ รหัสผ่านไม่ตรงกัน');
+                return;
+            }
+            if (!terms) {
+                alert('กรุณายอมรับเงื่อนไขการให้บริการ');
+                return;
+            }
+
+            btn.innerText = 'กำลังบันทึกข้อมูล...';
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            try {
+                const res = await fetch('http://localhost:3000/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        first_name: firstName,
+                        last_name: lastName,
+                        email,
+                        phone,
+                        role: 'farmer'
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('✅ สมัครสมาชิกสำเร็จ!');
+                    window.location.href = 'login.html';
+                } else {
+                    alert('❌ ' + data.message);
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

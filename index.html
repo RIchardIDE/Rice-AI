@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rice AI Analysis - เข้าสู่ระบบ</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans Thai"', 'sans-serif']
+                    }
+                }
+            }
+        }
+        //ฟังก์ชันเปิด-ปิดเมนู
+        function toggleMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+    </script>
+</head>
+
+<body class="bg-primary-bg min-h-screen flex flex-col font-sans text-[#2D3748]">
+
+    <nav class="bg-white text-black shadow-md sticky top-0 z-50">
+        <div class="w-full px-4 lg:px-6">
+            <div class="flex justify-between items-center h-16">
+
+                <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.href='index.html'">
+                    <img src="/image/logo.png" alt="Rice AI Logo" class="h-10 w-auto object-contain mb-1" />
+                    <span class="font-bold text-xl tracking-wide text-gray-800">Rice AI analysis</span>
+                </div>
+
+                <div class="hidden md:flex space-x-7 items-center">
+                    <a href="contact.html" class="font-bold text-black hover:text-primary transition">ติดต่อเรา</a>
+                    <a href="register.html"
+                        class="px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-green-700 transition shadow-sm">
+                        ลงทะเบียน
+                    </a>
+                </div>
+
+                <div class="md:hidden flex items-center">
+                    <button onclick="toggleMenu()" class="text-gray-600 hover:text-primary focus:outline-none p-2">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="mobile-menu"
+            class="hidden md:hidden bg-white border-t border-gray-100 shadow-lg absolute w-full left-0 top-16 z-40 pb-4">
+            <div class="flex flex-col p-4 space-y-4 font-bold text-gray-700">
+
+                <a href="contact.html" class="flex items-center gap-3 hover:bg-green-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-envelope w-6 text-center"></i> ติดต่อเรา</a>
+
+                <div class="border-t border-gray-100 pt-3 mt-2">
+                    <a href="register.html"
+                        class="flex items-center gap-3 text-primary bg-green-50 p-3 rounded-lg justify-center"><i
+                            class="fa-solid fa-user-plus"></i> ลงทะเบียนใช้งาน</a>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+</body>
+
+</html>
+
+<div class="flex-grow flex items-center justify-center p-4 md:p-8">
+        <div class="bg-white rounded-[48px] shadow-2xl overflow-hidden flex flex-col md:flex-row w-full max-w-7xl h-auto min-h-[650px]">
+            
+            <div class="w-full md:w-1/2 p-0 h-96 md:h-auto">
+                <div class="relative w-full h-full rounded-[24px] overflow-hidden shadow-sm group">
+                    <img src="./image/loginpic.png" alt="Rice Field" class="absolute inset-0 w-full h-full object-cover " />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                </div>
+            </div>
+
+            <div class="w-full md:w-1/2 p-10 md:p-16 flex flex-col justify-center">
+                <div class="text-center mb-10">
+                    <h1 class="text-3xl md:text-5xl font-extrabold text-gray-800 leading-tight">
+                        ระบบวินิจฉัยโรคข้าว
+                    </h1>
+                </div>
+
+                <form onsubmit="handleLogin(event)" class="space-y-6 max-w-md mx-auto w-full">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">ชื่อผู้ใช้</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-primary">
+                                <i class="fa-solid fa-user text-lg"></i>
+                            </span>
+                            <input type="text" id="username" placeholder="กรอกชื่อผู้ใช้ของคุณ" class="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition font-medium" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">รหัสผ่าน</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-primary">
+                                <i class="fa-solid fa-lock text-lg"></i>
+                            </span>
+                            <input type="password" id="password" placeholder="กรอกรหัสผ่าน" class="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition font-medium" />
+                        </div>
+                        <div class="text-right mt-2">
+                            <a href="forgetP.html" class="text-sm text-primary hover:underline font-bold">ลืมรหัสผ่าน?</a>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="login-btn" class="w-full bg-primary hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-lg">
+                        LOGIN (เข้าสู่ระบบ)
+                    </button>
+
+                    <div class="text-center mt-6 text-sm text-gray-600">
+                        ยังไม่มีบัญชีผู้ใช้?
+                        <a href="register.html" class="text-primary font-bold hover:underline ml-1">สร้างบัญชีผู้ใช้ใหม่</a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+<script type="module" src="/src/main.js"></script>
+
+<script>
+    async function handleLogin(e) {
+        e.preventDefault();
+
+        const btn = document.getElementById('login-btn');
+        const originalText = btn.innerHTML;
+
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังตรวจสอบ...';
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const res = await fetch('http://localhost:3000/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+
+               localStorage.setItem('rice_user', JSON.stringify(data.user));
+
+                // แยกทางตาม Role
+                if (data.user.role === 'admin') {
+                    alert('ยินดีต้อนรับผู้ดูแลระบบ! (Admin)');
+                    window.location.href = 'admin.html';
+
+                } else if (data.user.role === 'expert') {
+                    // กรณีเป็น ผู้เชี่ยวชาญ
+                    window.location.href = 'expert.html';
+
+                } else {
+                    // กรณีเป็น เกษตรกร
+                    window.location.href = 'home.html';
+                }
+            } else {
+                // ❌ Login ไม่สำเร็จ
+                alert('❌ ' + data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ Server');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            btn.classList.remove('opacity-75', 'cursor-not-allowed');
+        }
+    }
+
+    
+</script>
+</body>
+
+</html>

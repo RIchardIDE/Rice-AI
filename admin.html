@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rice AI - Admin Dashboard</title>
+
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Noto Sans Thai"', 'sans-serif'] },
+                    colors: { rice_green: '#16a34a', rice_bg: '#E8F3EA' }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-rice_bg text-gray-800 font-sans min-h-screen">
+
+    <aside class="hidden lg:flex w-64 bg-white shadow-lg fixed inset-y-0 left-0 z-40 flex-col justify-between">
+        
+        <div>
+            <div class="h-[80px] flex items-center px-6 border-b border-gray-50 mb-6 cursor-pointer" onclick="window.location.href='admin.html'">
+                <img src="/image/logo.png" alt="Rice AI" class="h-8 w-auto mr-2" />
+                <span class="font-bold text-lg text-black">Rice AI Admin</span>
+            </div>
+
+            <nav class="px-4 space-y-1">
+                <a href="admin.html" class="flex items-center gap-3 px-4 py-3 text-rice_green bg-primary-bg rounded-xl transition font-bold justify-between shadow-sm">
+                    <i class="fa-solid fa-table-columns w-5 text-center"></i> ภาพรวม (Dashboard)
+                </a>
+                <a href="admin_user.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-primary-bg rounded-xl transition font-bold">
+                    <i class="fa-solid fa-users w-5 text-center"></i> จัดการผู้ใช้งาน
+                </a>
+                <a href="admin_stats.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-primary-bg rounded-xl transition font-bold">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> รายงานสถิติ
+                </a>
+                
+                <div class="pt-4 pb-2 px-4 text-xs font-bold text-gray-400 uppercase">การจัดการเนื้อหา</div>
+                
+                <a href="admin_knowledge.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-primary-bg rounded-xl transition font-bold">
+                    <i class="fa-solid fa-book w-5 text-center"></i> คลังความรู้
+                </a>
+                
+                <a href="admin_inbox.html" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-primary-bg rounded-xl transition font-bold ">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-envelope w-5 text-center"></i> กล่องข้อความ
+                    </div>
+                    <span id="sidebar-badge" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full hidden">0</span>
+                </a>
+            </nav>
+        </div> <div class="p-4 border-t border-gray-50">
+            <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition font-bold">
+                <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> ออกจากระบบ
+            </button>
+        </div>
+
+    </aside>
+
+    <main class="flex-1 flex flex-col min-h-screen lg:ml-64 relative">
+
+        <header class="bg-transparent px-8 py-6">
+            <h1 class="text-3xl font-bold text-gray-800">สวัสดี, แอดมิน</h1>
+            <p class="text-gray-500 text-sm mt-1" id="current-date">ภาพรวมระบบประจำวันที่ ...</p>
+        </header>
+
+        <div class="px-8 pb-8 space-y-6">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div
+                    class="bg-white p-6 rounded-[20px] shadow-sm flex items-center justify-between relative overflow-hidden">
+                    <div>
+                        <h2 id="val-total-users" class="text-4xl font-bold text-gray-800">...</h2>
+                        <p class="text-gray-400 font-medium mt-1">เกษตรกรทั้งหมด</p>
+                    </div>
+                    <div
+                        class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 text-2xl">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                </div>
+                <div
+                    class="bg-white p-6 rounded-[20px] shadow-sm flex items-center justify-between relative overflow-hidden">
+                    <div>
+                        <h2 id="val-daily-scans" class="text-4xl font-bold text-gray-800">...</h2>
+                        <p class="text-gray-400 font-medium mt-1">วิเคราะห์โรควันนี้</p>
+                    </div>
+                    <div
+                        class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center text-green-600 text-2xl">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <div class="lg:col-span-2 bg-white rounded-[20px] shadow-sm p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-lg">รายงานวินิจฉัยล่าสุด (Real-time)</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="text-gray-400 border-b border-gray-100 font-medium">
+                                <tr>
+                                    <th class="py-3 pl-2">ผู้ใช้งาน</th>
+                                    <th class="py-3">แปลงนา</th>
+                                    <th class="py-3 text-center">ผลการตรวจ</th>
+                                    <th class="py-3 text-center">ความแม่นยำ</th>
+                                    <th class="py-3 text-right pr-2">เวลา</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-table-body" class="divide-y divide-gray-50 text-gray-600">
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">กำลังโหลด...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+
+                    <div class="bg-white rounded-[20px] shadow-sm p-6">
+                        <h3 class="font-bold text-lg mb-4">สัดส่วนโรคที่พบเดือนนี้</h3>
+                        <div class="relative h-64 w-full flex items-center justify-center">
+                            <canvas id="diseaseChart" class="z-10"></canvas>
+                            <div
+                                class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-16">
+                                <span id="chart-total"
+                                    class="text-5xl font-extrabold text-gray-800 leading-none">0</span>
+                                <span class="text-sm text-gray-400 mt-1">ครั้ง</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-[20px] shadow-sm p-6">
+                        <h3 class="font-bold text-lg mb-4">สมาชิกใหม่ล่าสุด</h3>
+                        <div id="new-members-list" class="space-y-4"></div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const storedUser = localStorage.getItem('rice_user');
+            if (!storedUser) { window.location.href = 'index.html'; return; }
+            const currentUser = JSON.parse(storedUser);
+            if (currentUser.role !== 'admin') { alert('⛔ คุณไม่มีสิทธิ์เข้าถึงหน้านี้'); window.location.href = 'home.html'; return; }
+
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('current-date').innerText = `ภาพรวมระบบประจำ${new Date().toLocaleDateString('th-TH', options)}`;
+
+            await loadDashboardData();
+        });
+
+        async function loadDashboardData() {
+            try {
+                const res = await fetch(`${API_URL}/admin/dashboard-overview`);
+                const json = await res.json();
+
+                if (json.success) {
+                    document.getElementById('val-total-users').innerText = json.stats.total_farmers.toLocaleString();
+                    document.getElementById('val-daily-scans').innerText = json.stats.daily_analysis.toLocaleString();
+
+                    const tbody = document.getElementById('recent-table-body');
+                    tbody.innerHTML = '';
+                    if (json.recent_table.length > 0) {
+                        json.recent_table.forEach(item => {
+                            const time = new Date(item.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                            let badgeClass = 'bg-gray-100 text-gray-600';
+                            if (item.disease.includes('ไหม้') || item.disease.toLowerCase().includes('blast')) badgeClass = 'bg-red-100 text-red-600';
+                            else if (item.disease.includes('ปกติ') || item.disease.toLowerCase().includes('healthy')) badgeClass = 'bg-green-100 text-green-600';
+                            else if (item.disease.includes('ขอบใบแห้ง') || item.disease.toLowerCase().includes('blight')) badgeClass = 'bg-yellow-100 text-yellow-700';
+
+                            const row = `
+                                <tr onclick="viewDetail(${item.id})" class="hover:bg-primary-bg transition cursor-pointer group">
+                                    <td class="py-3 pl-2 font-bold text-gray-800 group-hover:text-rice_green">${item.first_name} ${item.last_name}</td>
+                                    <td class="py-3 text-gray-500">${item.location_name || '-'}</td>
+                                    <td class="py-3 text-center"><span class="px-3 py-1 rounded-full text-xs font-bold ${badgeClass}">${item.disease}</span></td>
+                                    <td class="py-3 text-center font-medium">${item.confidence}</td>
+                                    <td class="py-3 text-right pr-2 text-gray-400">${time} น.</td>
+                                </tr>
+                            `;
+                            tbody.innerHTML += row;
+
+                        });
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-400">ยังไม่มีข้อมูลวันนี้</td></tr>`;
+                    }
+
+                    renderChart(json.chart_data);
+
+                    const memberList = document.getElementById('new-members-list');
+                    memberList.innerHTML = '';
+                    json.new_members.forEach((user, index) => {
+                        const colors = ['bg-blue-100 text-blue-600', 'bg-purple-100 text-purple-600', 'bg-green-100 text-green-600'];
+                        const initial = user.first_name.charAt(0);
+                        const timeAgo = calculateTimeAgo(new Date(user.created_at));
+
+                        const html = `
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full ${colors[index % 3]} flex items-center justify-center font-bold text-lg">
+                                    ${initial}
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800 text-sm">${user.first_name} ${user.last_name}</h4>
+                                    <p class="text-xs text-gray-400">ลงทะเบียนเมื่อ ${timeAgo}</p>
+                                </div>
+                            </div>
+                            ${index !== json.new_members.length - 1 ? '<hr class="border-gray-100">' : ''}
+                        `;
+                        memberList.innerHTML += html;
+                    });
+                }
+            } catch (error) { console.error("Dashboard Load Error:", error); }
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('diseaseChart').getContext('2d');
+
+            const labels = data.map(d => d.disease);
+            const values = data.map(d => d.count);
+            const total = values.reduce((a, b) => a + b, 0);
+            document.getElementById('chart-total').innerText = total.toLocaleString();
+
+            const backgroundColors = labels.map(label => {
+                const l = label.toLowerCase();
+                if (l.includes('ไหม้') || l.includes('blast')) return '#DC2626';
+                if (l.includes('ขอบใบแห้ง') || l.includes('blight')) return '#F59E0B';
+                if (l.includes('ปกติ') || l.includes('healthy')) return '#10B981';
+                return '#3B82F6';
+            });
+
+            if (window.myDoughnutChart) { window.myDoughnutChart.destroy(); }
+
+            window.myDoughnutChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    cutout: '75%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { usePointStyle: true, boxWidth: 10, font: { size: 12, weight: 'bold' }, padding: 20 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.label || '';
+                                    let value = context.raw || 0;
+                                    let percentage = Math.round((value / total) * 100) + '%';
+                                    return ` ${label}: ${value} ครั้ง (${percentage})`;
+                                }
+                            }
+                        }
+                    },
+                    layout: { padding: { bottom: 20 } }
+                }
+            });
+        }
+
+        function calculateTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " ชั่วโมงที่แล้ว";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " นาทีที่แล้ว";
+            return "เมื่อสักครู่";
+        }
+
+        // ฟังก์ชันเมื่อกดที่แถวตาราง
+        async function viewDetail(id) {
+            try {
+                localStorage.setItem('admin_view_case_id', id);
+                window.location.href = 'admin_detail.html';
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        // สคริปต์สำหรับโหลดจำนวนข้อความที่ยังไม่อ่าน 
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSidebarBadge();
+
+            setInterval(updateSidebarBadge, 30000);
+        });
+
+        async function updateSidebarBadge() {
+            try {
+                const res = await fetch('http://localhost:3000/admin/messages/unread-count');
+                const json = await res.json();
+
+                const badge = document.getElementById('sidebar-badge');
+
+                if (badge && json.success) {
+                    if (json.count > 0) {
+                        badge.innerText = json.count; 
+                        badge.classList.remove('hidden'); 
+                        badge.classList.add('flex'); 
+                    } else {
+                        badge.classList.add('hidden'); 
+                    }
+                }
+            } catch (err) {
+                console.error("ไม่สามารถโหลดจำนวนข้อความได้", err);
+            }
+        }
+
+        function logout() { localStorage.removeItem('rice_user'); window.location.href = 'index.html'; }
+
+        
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rice AI - คลังความรู้</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./src/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Noto Sans Thai"', 'sans-serif'] },
+                    colors: { rice_green: '#1A9E48' }
+                }
+            }
+        }
+        function toggleMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+    </script>
+</head>
+
+<body class="bg-light_bg font-sans text-[#2D3748] flex flex-col lg:flex-row min-h-screen">
+
+    <nav class="lg:hidden bg-white shadow-sm sticky top-0 z-50">
+        <div class="w-full px-4 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-2" onclick="window.location.href='home.html'">
+                <img src="/image/logo.png" alt="Rice AI" class="h-8 w-auto" />
+                <span class="font-bold text-lg text-black">Rice AI</span>
+            </div>
+            <button onclick="toggleMenu()" class="text-gray-600 hover:text-rice_green focus:outline-none p-2">
+                <i class="fa-solid fa-bars text-2xl"></i>
+            </button>
+        </div>
+        <div id="mobile-menu"
+            class="hidden bg-white border-t border-gray-100 shadow-lg absolute w-full left-0 top-16 z-40 pb-4">
+            <div class="flex flex-col p-4 space-y-4 font-bold text-gray-700">
+                <a href="home.html" class="flex items-center gap-3 hover:bg-gray-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-house w-6 text-center"></i> หน้าแรก</a>
+                <a href="analysis2.html" class="flex items-center gap-3 hover:bg-gray-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-camera w-6 text-center"></i> วินิจฉัยโรคข้าว</a>
+                <a href="history.html" class="flex items-center gap-3 hover:bg-gray-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-clock-rotate-left w-6 text-center"></i> ประวัติ</a>
+                <a href="knowledge.html" class="flex items-center gap-3 text-rice_green bg-green-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-book-open w-6 text-center"></i> คลังความรู้</a>
+                <a href="contact2.html" class="flex items-center gap-3 hover:bg-gray-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-envelope w-6 text-center"></i> ติดต่อเรา</a>
+                <a href="setting.html" class="flex items-center gap-3 hover:bg-gray-50 p-3 rounded-lg justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-gear w-6 text-center"></i> ตั้งค่า
+                    </div>
+                    <span id="nav-badge-mobile"
+                        class="hidden bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                </a>
+                <div class="border-t border-gray-100 pt-3 mt-2">
+                    <a href="index.html" class="flex items-center gap-3 text-red-500 hover:bg-red-50 p-3 rounded-lg"><i
+                            class="fa-solid fa-arrow-right-from-bracket w-6 text-center"></i> ออกจากระบบ</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <aside class="hidden lg:flex w-64 bg-white shadow-lg fixed inset-y-0 left-0 z-40 flex-col justify-between">
+        <div>
+            <div class="h-[80px] flex items-center px-6 border-b border-gray-50 mb-6 cursor-pointer"
+                onclick="window.location.href='home.html'">
+                <img src="/image/logo.png" alt="Rice AI" class="h-8 w-auto mr-2" />
+                <span class="font-bold text-lg text-black">Rice AI analysis</span>
+            </div>
+            <nav class="px-4 space-y-1">
+                <a href="home.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-green-50 rounded-xl transition font-bold"><i
+                        class="fa-solid fa-house w-5 text-center"></i> หน้าหลัก</a>
+                <a href="analysis2.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-green-50 rounded-xl transition font-bold"><i
+                        class="fa-solid fa-magnifying-glass-chart w-5 text-center"></i> วินิจฉัยโรคข้าว</a>
+                <a href="history.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-green-50 rounded-xl transition font-bold"><i
+                        class="fa-solid fa-clock-rotate-left w-5 text-center"></i> ประวัติ</a>
+                <a href="knowledge.html"
+                    class="flex items-center gap-3 px-4 py-3 text-rice_green bg-green-100 rounded-xl transition font-bold shadow-sm"><i
+                        class="fa-solid fa-book-open w-5 text-center"></i> คลังความรู้</a>
+                <a href="contact2.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-green-50 rounded-xl transition font-bold"><i
+                        class="fa-solid fa-user w-5 text-center"></i> ติดต่อเรา</a>
+                <a href="setting.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-green-50 rounded-xl transition font-bold justify-between group">
+
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-gear w-5 text-center"></i>
+                        ตั้งค่า
+                    </div>
+
+                    <span id="nav-badge-desktop"
+                        class="hidden bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm min-w-[20px] text-center">
+                        0
+                    </span>
+                </a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-50">
+            <a href="index.html"
+                class="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition font-bold">
+                <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> ออกจากระบบ
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 w-full lg:ml-64 p-4 lg:p-8">
+
+        <div
+            class="relative w-full h-[250px] lg:h-[320px] rounded-[20px] lg:rounded-[30px] overflow-hidden shadow-md mb-8 group">
+            <img src="./public/image/sunset.png" alt="Banner" class="absolute inset-0 w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-black/40"></div>
+            <div class="absolute inset-0 flex flex-col justify-center px-6 lg:px-16 text-white">
+                <span
+                    class="bg-green-600 text-[10px] lg:text-xs font-bold px-3 py-1 rounded-full w-fit mb-3 flex items-center gap-1">
+                    <div class="w-2 h-2 bg-green-300 rounded-full"></div> KNOWLEDGE BASE
+                </span>
+                <h1 class="text-3xl lg:text-5xl font-bold mb-2 lg:mb-4 drop-shadow-lg">
+                    คลังความรู้<span class="text-green-400">โรคข้าวและปุ๋ย</span>
+                </h1>
+                <p class="text-gray-200 text-sm lg:text-base mb-6 lg:mb-8 max-w-2xl font-medium leading-relaxed">
+                    ค้นหาข้อมูลโรคข้าว อาการที่พบ หรือชนิดของปุ๋ยที่เหมาะสม เพื่อเพิ่มผลผลิต
+                </p>
+
+                <div class="relative w-full max-w-xl">
+                    <input type="text" id="search-input" onkeyup="filterArticles()"
+                        placeholder="ค้นหาชื่อโรค, แมลง, หรือชนิดปุ๋ย..."
+                        class="w-full pl-4 lg:pl-6 pr-24 py-3 lg:py-4 rounded-xl text-sm lg:text-base text-gray-700 focus:outline-none focus:ring-2 focus:ring-rice_green shadow-lg" />
+                    <button
+                        class="absolute right-2 top-2 bottom-2 bg-[#C8E6C9] hover:bg-rice_green text-black hover:text-white font-bold px-4 lg:px-6 rounded-lg transition text-sm lg:text-base">
+                        ค้นหา
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-3 mb-8 overflow-x-auto pb-2 -mx-4 px-4 lg:mx-0 lg:px-0 no-scrollbar" id="filter-buttons">
+            <button onclick="filterCategory('all')"
+                class="filter-btn active px-6 py-2 rounded-full bg-rice_green text-white font-bold shadow-md transition transform hover:scale-105 whitespace-nowrap text-sm lg:text-base flex-shrink-0">
+                ทั้งหมด
+            </button>
+            <button onclick="filterCategory('disease')"
+                class="filter-btn px-6 py-2 rounded-full bg-white text-gray-600 font-bold shadow-sm hover:bg-gray-100 transition border border-gray-100 whitespace-nowrap text-sm lg:text-base flex-shrink-0">
+                โรคข้าว
+            </button>
+            <button onclick="filterCategory('pest')"
+                class="filter-btn px-6 py-2 rounded-full bg-white text-gray-600 font-bold shadow-sm hover:bg-gray-100 transition border border-gray-100 whitespace-nowrap text-sm lg:text-base flex-shrink-0">
+                ศัตรูพืช
+            </button>
+            <button onclick="filterCategory('fertilizer')"
+                class="filter-btn px-6 py-2 rounded-full bg-white text-gray-600 font-bold shadow-sm hover:bg-gray-100 transition border border-gray-100 whitespace-nowrap text-sm lg:text-base flex-shrink-0">
+                ปุ๋ยและสารอาหาร
+            </button>
+            <button onclick="filterCategory('care')"
+                class="filter-btn px-6 py-2 rounded-full bg-white text-gray-600 font-bold shadow-sm hover:bg-gray-100 transition border border-gray-100 whitespace-nowrap text-sm lg:text-base flex-shrink-0">
+                การดูแลรักษา
+            </button>
+        </div>
+
+        <div class="flex justify-between items-end mb-6">
+            <h2 class="text-xl lg:text-2xl font-bold text-black flex items-center gap-2">
+                <i class="fa-solid fa-fire text-orange-500"></i> บทความล่าสุด
+            </h2>
+        </div>
+
+        <div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-full text-center py-10 text-gray-400">
+                <i class="fa-solid fa-circle-notch fa-spin text-3xl"></i><br>กำลังโหลดข้อมูล...
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let allArticles = [];
+        let currentCategory = 'all';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadArticles();
+        });
+
+        // 1. โหลดบทความจาก API
+        async function loadArticles() {
+            try {
+                const res = await fetch(`${API_URL}/admin/articles`);
+                const json = await res.json();
+
+                if (json.success) {
+                    allArticles = json.data;
+                    allArticles.sort((a, b) => a.id - b.id);
+                    renderArticles(allArticles);
+                }
+            } catch (err) {
+                console.error("Load Error:", err);
+                document.getElementById('articles-grid').innerHTML = '<div class="col-span-full text-center text-red-400">โหลดข้อมูลไม่สำเร็จ</div>';
+            }
+        }
+
+        // 2. แสดงผลบทความ
+        function renderArticles(articles) {
+            const grid = document.getElementById('articles-grid');
+            grid.innerHTML = '';
+
+            if (articles.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">ไม่พบข้อมูล</div>';
+                return;
+            }
+
+            const catMap = {
+                'disease': { name: 'โรคข้าว', color: 'bg-red-100 text-red-500' },
+                'pest': { name: 'ศัตรูพืช', color: 'bg-orange-100 text-orange-500' },
+                'fertilizer': { name: 'ปุ๋ย', color: 'bg-blue-100 text-blue-500' },
+                'care': { name: 'การดูแล', color: 'bg-green-100 text-green-600' },
+                'news': { name: 'ข่าวสาร', color: 'bg-purple-100 text-purple-600' }
+            };
+
+            articles.forEach(item => {
+                const catInfo = catMap[item.category] || { name: item.category, color: 'bg-gray-100 text-gray-500' };
+                const imgUrl = item.thumbnail ? `${API_URL}/uploads/${item.thumbnail}` : '/image/logo.png';
+
+                const plainText = item.content.replace(/<[^>]*>?/gm, '');
+                const shortDesc = item.description ? item.description : item.content.replace(/<[^>]*>?/gm, '').substring(0, 100) + '...';
+
+                const card = `
+                    <div class="bg-white rounded-[24px] overflow-hidden shadow-sm hover:shadow-lg transition group border border-gray-50 flex flex-col h-full cursor-pointer" onclick="openArticleDetail(${item.id})">
+                        <div class="h-48 overflow-hidden relative flex-shrink-0">
+                            <img src="${imgUrl}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                            <span class="absolute top-4 left-4 ${catInfo.color} text-xs font-bold px-3 py-1 rounded-lg shadow-sm">
+                                ${catInfo.name}
+                            </span>
+                        </div>
+                        <div class="p-5 flex flex-col flex-grow">
+                            <h3 class="text-lg font-bold text-black mb-2 group-hover:text-rice_green transition line-clamp-2">${item.title}</h3>
+                            <p class="text-sm text-gray-500 mb-4 line-clamp-2 leading-relaxed font-medium flex-grow">
+                                ${shortDesc}
+                            </p>
+                            <div class="flex justify-between items-center text-xs text-gray-400 border-t border-gray-100 pt-3 mt-auto">
+                                <span><i class="fa-regular fa-eye"></i> ${item.views} ครั้ง</span>
+                                <span class="text-rice_green font-bold flex items-center gap-1 hover:underline">
+                                    อ่านต่อ <i class="fa-solid fa-arrow-right"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        // 3. กรองตามหมวดหมู่
+        function filterCategory(category) {
+            currentCategory = category;
+
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                btn.className = "filter-btn px-6 py-2 rounded-full bg-white text-gray-600 font-bold shadow-sm hover:bg-gray-100 transition border border-gray-100 whitespace-nowrap text-sm lg:text-base flex-shrink-0";
+            });
+            event.target.className = "filter-btn px-6 py-2 rounded-full bg-rice_green text-white font-bold shadow-md transition transform hover:scale-105 whitespace-nowrap text-sm lg:text-base flex-shrink-0";
+
+            filterArticles();
+        }
+
+        // 4. ค้นหาบทความ
+        function filterArticles() {
+            const text = document.getElementById('search-input').value.toLowerCase();
+
+            const filtered = allArticles.filter(item => {
+                const matchText = item.title.toLowerCase().includes(text) || item.content.toLowerCase().includes(text);
+                const matchCat = currentCategory === 'all' || item.category === currentCategory;
+                return matchText && matchCat;
+            });
+
+            renderArticles(filtered);
+        }
+
+        // 5. คลิกเพื่ออ่านรายละเอียด
+        function openArticleDetail(id) {
+            window.location.href = `knowledge_detail.html?id=${id}`;
+        }
+
+        // สคริปต์สำหรับโหลด Badge แจ้งเตือน (User)
+        document.addEventListener('DOMContentLoaded', () => {
+            const storedUser = localStorage.getItem('rice_user');
+            if (storedUser) {
+                const user = JSON.parse(storedUser);
+                updateUserBadge(user.id);
+            }
+        });
+
+        async function updateUserBadge(userId) {
+            try {
+                const res = await fetch(`http://localhost:3000/notifications/unread-count/${userId}`);
+                const json = await res.json();
+
+                const count = json.count;
+                const badges = [document.getElementById('nav-badge-desktop'), document.getElementById('nav-badge-mobile')];
+
+                badges.forEach(badge => {
+                    if (badge) {
+                        if (count > 0) {
+                            badge.innerText = count > 99 ? '99+' : count;
+                            badge.classList.remove('hidden');
+                        } else {
+                            badge.classList.add('hidden');
+                        }
+                    }
+                });
+            } catch (e) { console.error('Badge Error'); }
+        }
+    </script>
+
+</body>
+
+</html>

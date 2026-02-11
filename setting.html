@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rice AI - ตั้งค่า</title>
+
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Noto Sans Thai"', 'sans-serif'] },
+                }
+            }
+        }
+
+        function switchTab(tabName) {
+
+            document.getElementById('content-personal').classList.add('hidden');
+            document.getElementById('content-account').classList.add('hidden');
+            document.getElementById('content-notification').classList.add('hidden');
+
+
+            const buttons = document.querySelectorAll('.menu-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-green-50', 'text-rice_green');
+                btn.classList.add('text-gray-600', 'hover:bg-gray-50');
+            });
+
+
+            document.getElementById('content-' + tabName).classList.remove('hidden');
+
+            const activeBtn = document.getElementById('btn-' + tabName);
+            activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-50');
+            activeBtn.classList.add('bg-green-50', 'text-rice_green');
+
+            if (tabName === 'notification') {
+                const storedUser = localStorage.getItem('rice_user');
+                if (storedUser) {
+                    const user = JSON.parse(storedUser);
+                    fetch(`http://localhost:3000/notifications/mark-all-read/${user.id}`, { method: 'PUT' });
+
+                    const badges = document.querySelectorAll('#nav-badge-desktop, #nav-badge-mobile, #inner-noti-badge');
+                    badges.forEach(b => b.classList.add('hidden'));
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-light_bg font-sans text-[#2D3748] min-h-screen pb-10">
+
+    <nav class="bg-white text-black shadow-md sticky top-0 z-50">
+        <div class="w-full px-4 lg:px-6">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='home.html'">
+                    <img src="/image/logo.png" alt="Rice AI Logo" class="h-10 w-auto object-contain mb-1" />
+                    <span class="font-bold text-xl text-black tracking-wide">Rice AI analysis</span>
+                </div>
+                <div class="hidden xl:flex items-center space-x-8 text-base font-bold text-black">
+                    <a href="home.html" class="hover:text-rice_green transition-all">หน้าแรก</a>
+                    <a href="analysis2.html" class="hover:text-rice_green transition-all">วินิจฉัยโรคข้าว</a>
+                    <a href="history.html" class="hover:text-rice_green transition-all">ประวัติ</a>
+                    <a href="knowledge.html" class="hover:text-rice_green transition-all">คลังความรู้</a>
+                    <a href="contact2.html" class="hover:text-rice_green transition-all">ติดต่อเรา</a>
+                    <a href="setting.html"
+                        class="text-rice_green border-b-4 border-rice_green pb-0.5 transition-all">ตั้งค่า</a>
+                </div>
+                <div class="flex items-center gap-8">
+                    <div class="hidden xl:flex items-center gap-8">
+                        <button onclick="logout()"
+                            class="bg-btn_logout hover:bg-[#a0eeb6] text-white font-bold px-6 py-2 rounded-xl transition shadow-sm text-sm lg:text-base">ออกจากระบบ</button>
+                        <div
+                            class="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm cursor-pointer relative group">
+                            <a href="setting.html">
+                                <img id="nav-profile-img" src="/image/user_profile.png" alt="User"
+                                    class="w-full h-full object-cover" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="xl:hidden flex items-center">
+                <button onclick="toggleMenu()" class="text-gray-600 hover:text-green-600 focus:outline-none"><i
+                        class="fa-solid fa-bars text-2xl"></i></button>
+            </div>
+        </div>
+        </div>
+        </div>
+        <div id="mobile-menu"
+            class="hidden xl:hidden bg-white border-t border-gray-100 shadow-lg absolute w-full left-0 top-16 z-40 pb-4">
+            <div class="flex flex-col p-4 space-y-4 font-bold text-gray-700">
+                <a href="home.html" class="flex items-center gap-3 hover:bg-gray-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-house w-6 text-center"></i> หน้าแรก</a>
+                <a href="setting.html" class="flex items-center gap-3 text-rice_green bg-green-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-gear w-6 text-center"></i> ตั้งค่า</a>
+                <div class="border-t border-gray-100 pt-3 mt-2">
+                    <button onclick="logout()"
+                        class="flex items-center gap-3 text-red-500 hover:bg-red-50 p-3 rounded-lg w-full text-left font-bold"><i
+                            class="fa-solid fa-arrow-right-from-bracket w-6 text-center"></i> ออกจากระบบ</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
+            <i class="fa-solid fa-chevron-right text-xs"></i> <span>ตั้งค่า</span>
+        </div>
+        <h1 class="text-3xl font-bold text-black mb-6">โปรไฟล์ผู้ใช้</h1>
+
+        <div class="flex flex-col md:flex-row gap-8 items-start">
+            <div class="w-full md:w-1/3 lg:w-1/4 space-y-6">
+                <div class="bg-white rounded-[24px] shadow-sm p-6">
+                    <div class="flex flex-col items-center mb-6">
+                        <div class="relative w-28 h-28 group cursor-pointer"
+                            onclick="document.getElementById('file-upload').click()">
+                            <div
+                                class="w-full h-full rounded-full border-4 border-gray-100 overflow-hidden shadow-sm relative">
+                                <img id="img-display" src="./public/image/user.png" alt="Profile"
+                                    class="w-full h-full object-cover">
+                            </div>
+
+                            <div
+                                class="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <i class="fa-solid fa-camera text-white text-2xl"></i>
+                            </div>
+
+                            <div
+                                class="absolute bottom-0 right-0 bg-rice_green text-white w-8 h-8 rounded-full border-2 border-white flex items-center justify-center shadow-md">
+                                <i class="fa-solid fa-plus text-sm"></i>
+                            </div>
+                        </div>
+
+                        <input type="file" id="file-upload" class="hidden" accept="image/*"
+                            onchange="uploadImage(this)">
+
+                        <h3 id="profile-name" class="font-bold text-lg text-black mt-3">กำลังโหลด...</h3>
+                        <p id="profile-role" class="text-rice_green text-sm font-medium">...</p>
+                    </div>
+
+
+                    <div class="space-y-2">
+                        <button id="btn-personal" onclick="switchTab('personal')"
+                            class="menu-btn w-full flex items-center gap-4 px-4 py-3 rounded-xl bg-green-50 text-rice_green font-bold transition">
+                            <i class="fa-solid fa-user"></i> ข้อมูลส่วนตัว
+                        </button>
+
+                        <button id="btn-notification" onclick="switchTab('notification')"
+                            class="menu-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 transition font-bold group">
+
+                            <div class="flex items-center gap-4">
+                                <i class="fa-solid fa-bell"></i> การแจ้งเตือน
+                            </div>
+
+                            <span id="inner-noti-badge"
+                                class="hidden bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm min-w-[20px] text-center">
+                                0
+                            </span>
+                        </button>
+
+                        <button id="btn-account" onclick="switchTab('account')"
+                            class="menu-btn w-full flex items-center gap-4 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 transition font-bold">
+                            <i class="fa-solid fa-lock"></i> ตั้งค่าบัญชี
+                        </button>
+                    </div>
+                    <div class="border-t border-gray-100 my-4"></div>
+                    <button onclick="logout()"
+                        class="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition font-bold">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ
+                    </button>
+                </div>
+            </div>
+
+            <div class="w-full md:w-2/3 lg:w-3/4">
+
+                <div id="content-personal" class="space-y-6">
+                    <div class="bg-white rounded-[24px] shadow-sm p-6 lg:p-8 relative">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-black mb-1">ข้อมูลพื้นฐาน</h2>
+                                <p class="text-gray-500 text-sm">จัดการข้อมูลส่วนตัวและการติดต่อของคุณ</p>
+                            </div>
+                            <span
+                                class="bg-green-100 text-rice_green px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-circle-check"></i> สมาชิกยืนยันแล้ว
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div><label class="block text-sm font-bold text-black mb-2">ชื่อจริง</label><input
+                                    type="text" id="txt_firstname"
+                                    class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200"></div>
+                            <div><label class="block text-sm font-bold text-black mb-2">นามสกุล</label><input
+                                    type="text" id="txt_lastname"
+                                    class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200"></div>
+                            <div><label class="block text-sm font-bold text-black mb-2">อีเมล</label><input type="email"
+                                    id="txt_email" disabled
+                                    class="w-full px-4 py-3 rounded-xl bg-gray-100 border border-gray-200 cursor-not-allowed">
+                            </div>
+                            <div><label class="block text-sm font-bold text-black mb-2">เบอร์โทรศัพท์</label><input
+                                    type="tel" id="txt_phone" placeholder="ยังไม่ระบุ"
+                                    class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200"></div>
+                            <div class="md:col-span-2"><label
+                                    class="block text-sm font-bold text-black mb-2">ที่อยู่</label><input type="text"
+                                    id="txt_address" placeholder="ยังไม่ระบุที่อยู่"
+                                    class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200"></div>
+                        </div>
+                        <div class="flex justify-end pt-4 border-t border-gray-50">
+                            <button onclick="saveProfile()"
+                                class="flex items-center gap-2 text-rice_green cursor-pointer hover:underline font-bold text-sm bg-transparent border-none">
+                                <i class="fa-solid fa-floppy-disk"></i> บันทึกการเปลี่ยนแปลง
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="content-notification" class="hidden space-y-4">
+                    <div class="bg-white rounded-[24px] shadow-sm p-6 lg:p-8 min-h-[400px]">
+                        <h2 class="text-xl font-bold text-black mb-6 border-b pb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-bell text-rice_green"></i> รายการแจ้งเตือน
+                        </h2>
+                        <div id="notification-list" class="space-y-4">
+                            <div class="text-center text-gray-400 py-10">
+                                <i class="fa-solid fa-circle-notch fa-spin text-2xl"></i> กำลังโหลดข้อมูล...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="content-account" class="hidden space-y-6">
+
+                    <div class="bg-white rounded-[24px] shadow-sm p-6 lg:p-8">
+                        <h2 class="text-xl font-bold text-black mb-4 flex items-center gap-2"><i
+                                class="fa-solid fa-envelope"></i> เปลี่ยนอีเมล</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-black mb-2">อีเมลปัจจุบัน</label>
+                                <input type="text" id="val_current_email" disabled
+                                    class="w-full px-4 py-3 rounded-xl bg-gray-200 text-gray-500 cursor-not-allowed">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-black mb-2">อีเมลใหม่</label>
+                                <input type="email" id="val_new_email" placeholder="ระบุอีเมลใหม่"
+                                    class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-rice_green">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-red-500">* ยืนยันรหัสผ่านปัจจุบัน
+                                    (เพื่อความปลอดภัย)</label>
+                                <input type="password" id="val_pass_for_email" placeholder="กรอกรหัสผ่านปัจจุบัน"
+                                    class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-rice_green">
+                            </div>
+                            <div class="flex justify-end">
+                                <button onclick="updateEmail()"
+                                    class="bg-rice_green text-white px-6 py-2 rounded-xl font-bold hover:bg-green-700 transition shadow-sm">บันทึกอีเมลใหม่</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-[24px] shadow-sm p-6 lg:p-8">
+                        <h2 class="text-xl font-bold text-black mb-4 flex items-center gap-2"><i
+                                class="fa-solid fa-key"></i> เปลี่ยนรหัสผ่าน</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold mb-2 text-red-500">* รหัสผ่านปัจจุบัน</label>
+                                <input type="password" id="val_curr_pass" placeholder="กรอกรหัสผ่านปัจจุบัน"
+                                    class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-rice_green">
+                            </div>
+                            <hr class="border-gray-100 my-2">
+                            <div>
+                                <label class="block text-sm font-bold text-black mb-2">รหัสผ่านใหม่</label>
+                                <input type="password" id="val_new_pass" placeholder="ตั้งรหัสผ่านใหม่"
+                                    class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-rice_green">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-black mb-2">ยืนยันรหัสผ่านใหม่</label>
+                                <input type="password" id="val_confirm_pass" placeholder="กรอกรหัสผ่านใหม่อีกครั้ง"
+                                    class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-rice_green">
+                            </div>
+                            <div class="flex justify-end">
+                                <button onclick="updatePassword()"
+                                    class="bg-rice_green text-white px-6 py-2 rounded-xl font-bold hover:bg-green-700 transition shadow-sm">เปลี่ยนรหัสผ่าน</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="noti-detail-modal"
+        class="fixed inset-0 bg-black/60 z-[999] hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div
+            class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transform transition-all scale-100 animate-fade-in">
+            <div class="bg-rice_green p-4 flex justify-between items-center text-white">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info"></i> รายละเอียด
+                </h3>
+                <button onclick="closeNotiModal()" class="hover:text-gray-200 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <div>
+                    <p class="text-xs text-gray-400 font-bold mb-1 uppercase">หัวข้อเรื่อง</p>
+                    <h4 id="modal-noti-title" class="text-lg font-bold text-gray-800 leading-tight">...</h4>
+                </div>
+
+                <div class="border-t border-gray-100 my-2"></div>
+
+                <div id="modal-noti-img-container" class="hidden mb-4">
+                    <p class="text-xs text-gray-400 font-bold mb-2 uppercase">รูปภาพที่ส่งตรวจ</p>
+                    <div class="rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex justify-center">
+                        <img id="modal-noti-image" src="" class="max-w-full h-auto max-h-60 object-contain">
+                    </div>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 font-bold mb-2 uppercase">ข้อความจากระบบ</p>
+                    <div id="modal-noti-message"
+                        class="text-gray-600 bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm leading-relaxed min-h-[100px]">
+                        ...
+                    </div>
+                </div>
+
+                <div class="text-right pt-2">
+                    <span id="modal-noti-date" class="text-xs text-gray-400 font-medium">
+                        <i class="fa-regular fa-clock mr-1"></i> ...
+                    </span>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+
+                <button onclick="replyNoti()"
+                    class="px-4 py-2.5 bg-white border border-gray-300 text-gray-600 rounded-xl text-sm font-bold hover:bg-gray-100 transition shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-reply"></i> ตอบกลับ
+                </button>
+
+                <button onclick="closeNotiModal()"
+                    class="px-6 py-2.5 bg-rice_green text-white rounded-xl text-sm font-bold hover:bg-green-700 transition shadow-md">
+                    ตกลง
+                </button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const storedUser = localStorage.getItem('rice_user');
+
+            if (!storedUser) {
+                alert("กรุณาเข้าสู่ระบบก่อน");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = JSON.parse(storedUser);
+
+            await loadUserData(currentUser.id);
+            await loadNotifications(currentUser.id);
+            await updateInternalBadge(currentUser.id);
+        });
+
+        async function loadUserData(userId) {
+            try {
+                const res = await fetch(`${API_URL}/get-user-profile/${userId}`);
+                const json = await res.json();
+
+                if (json.success) {
+                    const data = json.data;
+                    document.getElementById('profile-name').innerText = `${data.first_name} ${data.last_name}`;
+
+
+                    const imgDisplay = document.getElementById('img-display');
+                    if (data.profile_image) {
+
+                        imgDisplay.src = `${API_URL}/uploads/profiles/${data.profile_image}`;
+                    } else {
+
+                        imgDisplay.src = './public/image/user.png';
+                    }
+                }
+            } catch (err) { console.error("Load Error:", err); }
+        }
+
+        async function uploadImage(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const formData = new FormData();
+                formData.append('profile_pic', file);
+                formData.append('user_id', currentUser.id);
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('img-display').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+
+                try {
+                    const res = await fetch(`${API_URL}/upload-profile-image`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const json = await res.json();
+
+                    if (json.success) {
+
+                        currentUser.profile_image = json.filename;
+                        localStorage.setItem('rice_user', JSON.stringify(currentUser));
+                        alert('✅ อัปโหลดรูปโปรไฟล์สำเร็จ');
+                    } else {
+                        alert('❌ ' + json.message);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('อัปโหลดไม่สำเร็จ');
+                }
+            }
+        }
+
+        async function loadUserData(userId) {
+            try {
+                const res = await fetch(`${API_URL}/get-user-profile/${userId}`);
+                const json = await res.json();
+
+                if (json.success) {
+                    const data = json.data;
+
+                    document.getElementById('profile-name').innerText = `${data.first_name} ${data.last_name}`;
+                    if (document.getElementById('profile-role')) {
+                        let roleMap = { 'farmer': 'เกษตรกร', 'expert': 'ผู้เชี่ยวชาญ', 'admin': 'ผู้ดูแลระบบ' };
+                        document.getElementById('profile-role').innerText = roleMap[data.role] || data.role;
+                    }
+
+                    if (document.getElementById('txt_firstname')) document.getElementById('txt_firstname').value = data.first_name || '';
+                    if (document.getElementById('txt_lastname')) document.getElementById('txt_lastname').value = data.last_name || '';
+                    if (document.getElementById('txt_email')) document.getElementById('txt_email').value = data.email || '';
+                    if (document.getElementById('txt_phone')) document.getElementById('txt_phone').value = data.phone || '';
+                    if (document.getElementById('txt_address')) document.getElementById('txt_address').value = data.address || '';
+                    if (document.getElementById('val_current_email')) document.getElementById('val_current_email').value = data.email || '';
+
+
+                    const imgDisplay = document.getElementById('img-display');
+                    const navImgDisplay = document.getElementById('nav-profile-img');
+                    const plusIconContainer = document.getElementById('plus-icon-container');
+
+                    const defaultImage = './public/image/user_profile.png';
+
+                    if (data.profile_image) {
+
+                        const imageUrl = `${API_URL}/uploads/profiles/${data.profile_image}`;
+                        imgDisplay.src = imageUrl;
+                        if (navImgDisplay) navImgDisplay.src = imageUrl;
+
+                        if (plusIconContainer) plusIconContainer.classList.add('hidden');
+                    } else {
+
+                        imgDisplay.src = defaultImage;
+                        if (navImgDisplay) navImgDisplay.src = defaultImage;
+
+                        if (plusIconContainer) plusIconContainer.classList.remove('hidden');
+                    }
+                }
+            } catch (err) {
+                console.error("Load Error:", err);
+            }
+        }
+
+        async function saveProfile() {
+            const first_name = document.getElementById('txt_firstname').value;
+            const last_name = document.getElementById('txt_lastname').value;
+            const phone = document.getElementById('txt_phone').value;
+            const address = document.getElementById('txt_address').value;
+
+            try {
+                const res = await fetch(`${API_URL}/update-user-profile`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: currentUser.id, first_name, last_name, phone, address })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    alert('✅ บันทึกข้อมูลเรียบร้อย!');
+                    document.getElementById('profile-name').innerText = `${first_name} ${last_name}`;
+                    currentUser.first_name = first_name;
+                    currentUser.last_name = last_name;
+                    localStorage.setItem('rice_user', JSON.stringify(currentUser));
+                } else { alert('❌ ' + json.message); }
+            } catch (err) { alert('เชื่อมต่อ Server ไม่ได้'); }
+        }
+
+
+        async function updatePassword() {
+            const current_password = document.getElementById('val_curr_pass').value;
+            const new_password = document.getElementById('val_new_pass').value;
+            const confirm_pass = document.getElementById('val_confirm_pass').value;
+
+            if (!current_password || !new_password || !confirm_pass) return alert('กรุณากรอกข้อมูลให้ครบ');
+            if (new_password !== confirm_pass) return alert('รหัสผ่านใหม่ไม่ตรงกัน');
+            if (new_password.length < 4) return alert('รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร');
+
+            try {
+                const res = await fetch(`${API_URL}/update-account-settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: currentUser.id, current_password, new_password })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    alert('✅ เปลี่ยนรหัสผ่านสำเร็จ! กรุณาเข้าสู่ระบบใหม่');
+                    logout();
+                } else { alert('❌ ' + json.message); }
+            } catch (err) { alert('Server Error'); }
+        }
+
+        async function updateEmail() {
+            const new_email = document.getElementById('val_new_email').value;
+            const current_password = document.getElementById('val_pass_for_email').value;
+
+            if (!new_email || !current_password) return alert('กรุณากรอกข้อมูลให้ครบ');
+
+            try {
+                const res = await fetch(`${API_URL}/update-account-settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: currentUser.id, new_email, current_password })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    alert('✅ เปลี่ยนอีเมลสำเร็จ! กรุณาเข้าสู่ระบบใหม่');
+                    logout();
+                } else { alert('❌ ' + json.message); }
+            } catch (err) { alert('Server Error'); }
+        }
+
+
+        async function loadNotifications(userId) {
+            try {
+                const res = await fetch(`${API_URL}/get-notifications/${userId}`);
+                const json = await res.json();
+                const list = document.getElementById('notification-list');
+                list.innerHTML = '';
+
+                if (json.success && json.data.length > 0) {
+                    json.data.forEach(noti => {
+                        const date = new Date(noti.created_at).toLocaleString('th-TH');
+
+                        const safeTitle = noti.title.replace(/"/g, '&quot;').replace(/'/g, "\\'");
+                        const safeMsg = noti.message.replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, '<br>');
+
+
+                        const safeImage = noti.image_base64 ? noti.image_base64 : null;
+
+                        const item = `
+                            <div onclick="openNotiModal('${safeTitle}', '${safeMsg}', '${date}', ${safeImage ? `'${safeImage}'` : 'null'})" 
+                                 class="cursor-pointer flex flex-col md:flex-row gap-4 items-start md:items-center p-4 bg-gray-50 rounded-xl border border-gray-100 hover:bg-green-50 hover:border-green-200 hover:shadow-md transition relative group">
+                                
+                                <div class="bg-white p-3 rounded-full shadow-sm text-rice_green text-xl shrink-0 group-hover:scale-110 transition">
+                                    <i class="fa-solid fa-envelope-open-text"></i>
+                                </div>
+
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-gray-800 text-lg group-hover:text-rice_green transition">${noti.title}</h4>
+                                    <p class="text-gray-600 mt-1 text-sm md:text-base line-clamp-2">${noti.message}</p>
+                                    <span class="text-xs text-gray-400 mt-2 block"><i class="fa-regular fa-clock"></i> ${date}</span>
+                                </div>
+                                
+                                ${safeImage ? '<i class="fa-solid fa-image text-gray-400 mr-2" title="มีรูปภาพแนบ"></i>' : ''}
+
+                                <button class="shrink-0 text-gray-400 hover:text-rice_green transition self-center hidden md:block">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        `;
+                        list.innerHTML += item;
+                    });
+                } else {
+                    list.innerHTML = `<div class="text-center py-10 text-gray-400"><i class="fa-solid fa-bell-slash text-4xl mb-3"></i><p>ไม่มีการแจ้งเตือนใหม่</p></div>`;
+                }
+            } catch (err) { console.error("Noti Error:", err); }
+        }
+
+
+        function openNotiModal(title, message, date, image) {
+            document.getElementById('modal-noti-title').innerText = title;
+            document.getElementById('modal-noti-message').innerHTML = message;
+            document.getElementById('modal-noti-date').innerHTML = `<i class="fa-regular fa-clock mr-1"></i> ${date}`;
+
+            const imgContainer = document.getElementById('modal-noti-img-container');
+            const imgTag = document.getElementById('modal-noti-image');
+
+            if (image && image !== 'null') {
+                imgTag.src = image;
+                imgContainer.classList.remove('hidden');
+            } else {
+                imgTag.src = '';
+                imgContainer.classList.add('hidden');
+            }
+
+            const modal = document.getElementById('noti-detail-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+
+        function closeNotiModal() {
+            const modal = document.getElementById('noti-detail-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+
+        function replyNoti() {
+            const title = document.getElementById('modal-noti-title').innerText;
+            const safeTitle = encodeURIComponent(title);
+
+
+            window.location.href = `reply.html?subject=ตอบกลับ: ${safeTitle}`;
+        }
+
+
+        document.addEventListener('DOMContentLoaded', async () => {
+
+            await loadUserData(currentUser.id);
+            await loadNotifications(currentUser.id);
+
+
+            updateInternalBadge(currentUser.id);
+        });
+
+
+
+        async function updateInternalBadge(userId) {
+            try {
+                const res = await fetch(`${API_URL}/notifications/unread-count/${userId}`);
+                const json = await res.json();
+                const badge = document.getElementById('inner-noti-badge');
+
+                if (json.count > 0) {
+                    badge.innerText = json.count > 99 ? '99+' : json.count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function logout() {
+
+            if (confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) {
+
+
+                localStorage.removeItem('rice_user');
+                localStorage.removeItem('reset_contact');
+                localStorage.removeItem('reset_method');
+
+
+
+                alert("ออกจากระบบเรียบร้อยแล้ว");
+
+                window.location.href = 'index.html';
+            }
+        }
+
+
+    </script>
+
+</body>
+
+</html>

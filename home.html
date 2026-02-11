@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rice AI - หน้าแรก</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans Thai"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+</head>
+
+<body class="bg-light_bg min-h-screen font-sans text-[#2D3748]">
+
+
+    <nav class="bg-white  text-black shadow-md sticky top-0 z-50">
+        <div class="w-full px-4 lg:px-6">
+            <div class="flex justify-between items-center h-16">
+
+                <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='home.html'">
+                    <img src="/image/logo.png" alt="Rice AI Logo" class="h-10 w-auto object-contain mb-1" />
+                    <span class="font-bold text-xl text-black tracking-wide">Rice AI analysis</span>
+                </div>
+
+                <div class="hidden xl:flex items-center space-x-8 text-base font-bold text-black">
+
+                    <a href="home.html" class="text-rice_green border-b-4 border-rice_green pb-0.5 transition-all">
+                        หน้าแรก
+                    </a>
+
+                    <a href="analysis2.html"
+                        class="border-b-4 border-transparent pb-0.5 hover:text-rice_green transition-all flex items-center gap-1">
+                        วินิจฉัยโรคข้าว
+                    </a>
+
+                    <a href="history.html"
+                        class="border-b-4 border-transparent pb-0.5 hover:text-rice_green transition-all flex items-center gap-1">
+                        ประวัติ
+                    </a>
+
+                    <a href="knowledge.html"
+                        class="border-b-4 border-transparent pb-0.5 hover:text-rice_green transition-all">
+                        คลังความรู้
+                    </a>
+
+                    <a href="contact2.html"
+                        class="border-b-4 border-transparent pb-0.5 hover:text-rice_green transition-all">
+                        ติดต่อเรา
+                    </a>
+
+                    <a href="setting.html"
+                        class="relative border-b-4 border-transparent pb-0.5 hover:text-rice_green transition-all group flex items-center">
+                        ตั้งค่า
+                        <span id="nav-badge-desktop"
+                            class="hidden absolute -top-1 -right-2 w-2.5 h-2.5 bg-red-500 rounded-full border border-white shadow-sm text-[0px]">
+                        </span>
+                    </a>
+                </div>
+
+                <div class="flex items-center gap-8">
+                    <div class="hidden xl:flex items-center gap-8">
+                        <a href="index.html"
+                            class="bg-btn_logout hover:bg-[#a0eeb6] text-white font-bold px-6 py-2 rounded-xl transition shadow-sm text-sm lg:text-base">
+                            ออกจากระบบ
+                        </a>
+
+                        <div
+                            class="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm cursor-pointer relative group">
+                            <a href="setting.html">
+                                <img id="nav-profile-img" src="/image/user_profile.png" alt="User"
+                                    class="w-full h-full object-cover" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="xl:hidden flex items-center">
+                    <button onclick="toggleMenu()" class="text-gray-600 hover:text-green-600 focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobile-menu"
+            class="hidden xl:hidden bg-white border-t border-gray-100 shadow-lg absolute w-full left-0 top-16 z-40 pb-4">
+            <div class="flex flex-col p-4 space-y-4 font-bold text-gray-700">
+                <a href="home.html" class="flex items-center gap-3 text-rice_green bg-green-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-house w-6 text-center"></i> หน้าแรก</a>
+                <a href="analysis2.html" class="flex items-center gap-3 hover:bg-gray-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-camera w-6 text-center"></i> วินิจฉัยโรคข้าว</a>
+                <a href="history.html" class="flex items-center gap-3 hover:bg-gray-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-clock-rotate-left w-6 text-center"></i> ประวัติ</a>
+                <a href="knowledge.html" class="flex items-center gap-3 hover:bg-gray-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-book-open w-6 text-center"></i> คลังความรู้</a>
+                <a href="contact2.html" class="flex items-center gap-3 hover:bg-gray-50 p-3 rounded-lg"><i
+                        class="fa-solid fa-envelope w-6 text-center"></i> ติดต่อเรา</a>
+                <a href="setting.html" class="flex items-center gap-3 hover:bg-gray-50 p-3 rounded-lg justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-gear w-6 text-center"></i> ตั้งค่า
+                    </div>
+                    <span id="nav-badge-mobile"
+                        class="hidden bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
+                </a>
+                <div class="border-t border-gray-100 pt-3 mt-2">
+                    <a href="index.html" class="flex items-center gap-3 text-red-500 hover:bg-red-50 p-3 rounded-lg"><i
+                            class="fa-solid fa-arrow-right-from-bracket w-6 text-center"></i> ออกจากระบบ</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <div class="relative w-full h-[400px] rounded-[30px] overflow-hidden shadow-lg group">
+            <img src="/image/banner_rice.png" alt="Smart Farming"
+                class="absolute inset-0 w-full h-full object-cover " />
+
+            <div class="absolute inset-0 bg-black/30"></div>
+
+            <div class="absolute inset-0 flex flex-col justify-center items-center text-center text-white px-4">
+                <h1 class="text-4xl md:text-6xl font-bold mb-2 drop-shadow-lg tracking-tight">Smart Farming</h1>
+                <h2 class="text-2xl md:text-3xl font-bold mb-4 drop-shadow-md">เพื่อการเก็บเกี่ยวที่มีประสิทธิภาพ</h2>
+                <p class="text-lg md:text-xl font-light mb-8 opacity-90 max-w-2xl">เริ่มดูแลพืชอย่างชาญฉลาด ตรวจโรคไว
+                    แนะนำตรงจุด ด้วยระบบ AI</p>
+
+                <a href="analysis2.html">
+                    <button
+                        class="bg-btn_green hover:bg-[#7a9980] text-black font-bold py-3 px-8 rounded-xl shadow-lg backdrop-blur-sm transition transform hover:-translate-y-1 flex items-center gap-2.5 text-base">
+
+                        <i class="fa-solid fa-expand"></i> เริ่มการวินิจฉัยโรค
+                    </button></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <div class="flex flex-col lg:flex-row gap-10 items-start">
+
+            <div class="w-full lg:w-[35%] flex flex-col items-center lg:items-start">
+
+                <h3 class="text-xl font-bold text-black mb-6 border-l-4 border-rice_green pl-3">ฟังก์ชันหลัก</h3>
+
+                <div
+                    class="bg-white rounded-[30px] overflow-hidden shadow-sm hover:shadow-md transition duration-300 w-full max-w-[400px] border border-gray-100">
+                    <div class="h-60 w-full relative group overflow-hidden">
+                        <img src="./public/image/rice_analysis.png" alt="Analyze" class="w-full h-full object-cover " />
+                    </div>
+                    <div class="p-6">
+                        <h4 class="text-2xl font-bold text-black mb-3">วินิจฉัยโรคข้าว</h4>
+                        <p class="text-black text-base font-normal mb-8 leading-relaxed">
+                            อัปโหลดหรือถ่ายภาพนาข้าว ตรวจโรคทันทีด้วย AI <br
+                                class="hidden md:block">พร้อมคำแนะนำการรักษา
+                        </p>
+                        <a href="analysis2.html">
+                            <button
+                                class="w-full bg-[#B9F6CA] hover:bg-[#a0eeb6] text-black font-bold py-3.5 rounded-xl transition flex justify-center items-center gap-2 text-base shadow-sm">
+                                <i class="fa-solid fa-file-circle-check"></i>
+                                วินิจฉัยโรคตอนนี้
+                            </button></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-[65%]">
+
+                <div class="mb-6 pl-2">
+                    <h3 class="text-xl font-bold text-black mb-2">ขั้นตอนการทำงานของระบบ</h3>
+                    <p class="text-black text-sm font-normal">ระบบ AI ช่วยจัดการพืชผลได้อย่างมีประสิทธิภาพ ด้วย 3
+                        ขั้นตอนง่าย ๆ</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                    <div
+                        class="bg-white rounded-[24px] p-4 shadow-sm hover:shadow-lg transition duration-300 transform hover:-translate-y-1 border border-gray-50">
+                        <div class="h-40 rounded-[20px] overflow-hidden mb-4">
+                            <img src="/image/step1.png" alt="Step 1" class="w-full h-full object-cover" />
+                        </div>
+                        <div class="px-1">
+                            <h4 class="font-bold text-lg text-black mb-1">1. ถ่ายภาพพืช</h4>
+                            <p class="text-xs text-black font-normal leading-relaxed">
+                                ถ่ายภาพต้นข้าวที่มีความผิดปกติ เน้นใบหรือลำต้นให้ชัดเจน
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-white rounded-[24px] p-4 shadow-sm hover:shadow-lg transition duration-300 transform hover:-translate-y-1 border border-gray-50">
+                        <div class="h-40 rounded-[20px] overflow-hidden mb-4">
+                            <img src="/image/step2.png" alt="Step 2" class="w-full h-full object-cover" />
+                        </div>
+                        <div class="px-1">
+                            <h4 class="font-bold text-lg text-black mb-1">2. AI วิเคราะห์</h4>
+                            <p class="text-xs text-black font-normal leading-relaxed">
+                                ประมวลผลภาพเพื่อระบุโรค หรือภาวะขาดธาตุอาหาร
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-white rounded-[24px] p-4 shadow-sm hover:shadow-lg transition duration-300 transform hover:-translate-y-1 border border-gray-50">
+                        <div class="h-40 rounded-[20px] overflow-hidden mb-4">
+                            <img src="/image/step3.png" alt="Step 3" class="w-full h-full object-cover" />
+                        </div>
+                        <div class="px-1">
+                            <h4 class="font-bold text-lg text-black mb-1">3. รับแนวทางแก้ไข</h4>
+                            <p class="text-xs text-black font-normal leading-relaxed">
+                                รับขั้นตอนการรักษา
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // สคริปต์สำหรับโหลดรูปโปรไฟล์ใส่ Navbar 
+        document.addEventListener('DOMContentLoaded', async () => {
+            const API_URL = 'http://localhost:3000';
+            const storedUser = localStorage.getItem('rice_user');
+            const navImg = document.getElementById('nav-profile-img');
+
+            if (!storedUser || !navImg) return;
+
+            const currentUser = JSON.parse(storedUser);
+
+            try {
+                // 1. ตั้งรูป Default 
+                navImg.src = '/image/user_profile.png';
+
+                // 2. ยิงไปถาม Server ว่ามีรูปใหม่ไหม?
+                const res = await fetch(`${API_URL}/get-user-profile/${currentUser.id}`);
+                const json = await res.json();
+
+                if (json.success && json.data.profile_image) {
+                    // 3. ถ้ามีรูปใน Database -> เปลี่ยนรูปทันที
+                    navImg.src = `${API_URL}/uploads/profiles/${json.data.profile_image}`;
+                }
+            } catch (err) {
+                console.error("โหลดรูปโปรไฟล์ไม่สำเร็จ:", err);
+            }
+        });
+
+        // สคริปต์สำหรับโหลด Badge แจ้งเตือน (User)
+        document.addEventListener('DOMContentLoaded', () => {
+            const storedUser = localStorage.getItem('rice_user');
+            if (storedUser) {
+                const user = JSON.parse(storedUser);
+                updateUserBadge(user.id);
+            }
+        });
+
+        async function updateUserBadge(userId) {
+            try {
+                const res = await fetch(`http://localhost:3000/notifications/unread-count/${userId}`);
+                const json = await res.json();
+
+                const count = json.count;
+                const badges = [document.getElementById('nav-badge-desktop'), document.getElementById('nav-badge-mobile')];
+
+                badges.forEach(badge => {
+                    if (badge) {
+                        if (count > 0) {
+                            badge.innerText = count > 99 ? '99+' : count;
+                            badge.classList.remove('hidden');
+                        } else {
+                            badge.classList.add('hidden');
+                        }
+                    }
+                });
+            } catch (e) { console.error('Badge Error'); }
+        }
+
+    </script>
+
+</body>
+
+</html>

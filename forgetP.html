@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rice AI - ลืมรหัสผ่าน</title>
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-primary-bg min-h-screen flex flex-col font-sans">
+
+    <nav class="bg-white text-black shadow-md sticky top-0 z-50">
+        <div class="w-full px-4 lg:px-6">
+            <div class="flex justify-between items-center h-16">
+
+                <div class="flex items-center gap-2 ">
+
+                    <img src="/image/logo.png" alt="Rice AI Logo" class="h-10 w-auto object-contain mb-1" />
+
+                    <span class="font-bold text-xl tracking-wide text-gray-800">Rice AI analysis</span>
+                </div>
+
+                <div class="mr-5 hidden md:flex space-x-8 items-center">
+                    <a href="#" class=" font-bold text-black hover:text-primary transition">ติดต่อเรา</a>
+                    <a href="register.html" class="px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary-extralight transition shadow-sm">
+                        ลงทะเบียน
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex-grow flex items-center justify-center p-4 md:p-8">
+
+        <div
+            class="bg-white rounded-[48px] shadow-2xl overflow-hidden flex flex-col md:flex-row w-full max-w-7xl h-auto min-h-[650px]">
+
+            <div class="w-full md:w-1/2 p-0 h-96 md:h-auto">
+
+                <div class="relative w-full h-full rounded-[24px] overflow-hidden shadow-sm group">
+                    <img src="./image/loginpic.png" alt="Rice Field"
+                        class="absolute inset-0 w-full h-full object-cover " />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                </div>
+            </div>
+
+            <div class="w-full md:w-1/2 p-10 md:p-14 flex flex-col justify-center items-center">
+
+                <div class="w-20 h-20 bg-primary-bgicon rounded-full flex items-center justify-center mb-6">
+                    <i class="fa-solid fa-lock text-4xl text-primary"></i>
+                </div>
+
+                <h2 class="text-3xl font-extrabold text-gray-900 mb-2">ลืมรหัสผ่าน</h2>
+                <p class="text-gray-500 mb-8  text-sm font-bold ">เลือกวิธีการกู้คืนรหัสผ่านที่คุณสะดวก</p>
+
+                <div class="bg-gray-100 p-1 rounded-xl flex w-full max-w-sm mb-8">
+                    <button id="btn-phone" onclick="toggleMethod('phone')"
+                        class="w-1/2 bg-white text-gray-800 py-2 rounded-lg shadow-sm font-bold text-sm transition duration-200">
+                        เบอร์โทรศัพท์
+                    </button>
+                    <button id="btn-email" onclick="toggleMethod('email')"
+                        class="w-1/2 text-gray-500 py-2 rounded-lg font-medium text-sm hover:bg-gray-200 transition duration-200">
+                        อีเมล
+                    </button>
+                </div>
+
+                <form class="w-full max-w-sm space-y-5">
+
+                    <div>
+                        <label id="input-label"
+                            class="block text-gray-700 text-sm font-bold mb-2">เบอร์โทรศัพท์มือถือ</label>
+                        <div class="relative">
+                            <input id="input-field" type="tel" placeholder="08X-XXX-XXXX"
+                                class="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition font-medium" />
+
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-primary">
+                                <i id="input-icon" class="fa-solid fa-phone"></i>
+                            </span>
+                        </div>
+                        <p id="helper-text" class="text-sm text-gray-500 mt-2 ml-1">
+                            ระบบจะส่งรหัส OTP ไปยังเบอร์นี้เพื่อยืนยันตัวตน
+                        </p>
+                    </div>
+
+                    <button type="button" id="submit-btn"
+                    class="w-full bg-primary hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-lg">
+                        รับรหัส OTP
+                    </button>
+
+                    <div class="text-center mt-6">
+                        <a href="index.html"
+                            class="text-gray-500 hover:text-gray-800 font-bold text-sm flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-arrow-left"></i> กลับไปหน้าเข้าสู่ระบบ
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+
+            </form>
+
+        </div>
+    </div>
+    </div>
+
+    <script type="module" src="./src/forgotP.js"></script>
+</body>
+
+</html>

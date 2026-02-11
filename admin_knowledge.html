@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>คลังความรู้ - Rice AI Admin</title>
+    <link rel="stylesheet" href="./src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#2E7D32', bg: '#E8F5E9' },
+                        rice_green: '#1A9E48',
+                        light_bg: '#F0F4F1',
+                    },
+                    fontFamily: { sans: ['"Noto Sans Thai"', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-light_bg text-gray-800 font-sans min-h-screen flex">
+
+    <aside class="hidden lg:flex w-64 bg-white shadow-lg fixed inset-y-0 left-0 z-40 flex-col justify-between">
+        <div>
+            <div class="h-[80px] flex items-center px-6 border-b border-gray-50 mb-6 cursor-pointer"
+                onclick="window.location.href='admin.html'">
+                <img src="/image/logo.png" alt="Rice AI" class="h-8 w-auto mr-2" />
+                <span class="font-bold text-lg text-black">Rice AI Admin</span>
+            </div>
+
+            <nav class="px-4 space-y-1">
+                <a href="admin.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-primary-bg rounded-xl transition font-bold">
+                    <i class="fa-solid fa-table-columns w-5 text-center"></i> ภาพรวม
+                </a>
+                <a href="admin_user.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-primary-bg rounded-xl transition font-bold">
+                    <i class="fa-solid fa-users w-5 text-center"></i> จัดการผู้ใช้งาน
+                </a>
+                <a href="admin_stats.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-primary-bg rounded-xl transition font-bold">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> รายงานสถิติ
+                </a>
+
+                <div class="pt-4 pb-2 px-4 text-xs font-bold text-gray-400 uppercase">การจัดการเนื้อหา</div>
+
+                <a href="admin_knowledge.html"
+                    class="flex items-center gap-3 px-4 py-3 text-rice_green bg-primary-bg rounded-xl transition font-bold shadow-sm">
+                    <i class="fa-solid fa-book w-5 text-center"></i> คลังความรู้
+                </a>
+
+                <a href="admin_inbox.html"
+                    class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-rice_green hover:bg-primary-bg rounded-xl transition font-bold ">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-envelope w-5 text-center"></i> กล่องข้อความ
+                    </div>
+                    <span id="sidebar-badge"
+                        class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full hidden">0</span>
+                </a>
+
+
+        </div>
+        <div class="p-4 border-t border-gray-50">
+            <button onclick="logout()"
+                class="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition font-bold">
+                <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i> ออกจากระบบ
+            </button>
+        </div>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-h-screen lg:ml-64 p-6 lg:p-10">
+
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">จัดการคลังความรู้</h1>
+                <p class="text-gray-500 text-sm">เพิ่ม ลบ แก้ไข บทความเกี่ยวกับโรคข้าว ปุ๋ย และวิธีกำจัดศัตรูพืช</p>
+            </div>
+            <button onclick="openModal()"
+                class="bg-rice_green hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm flex items-center gap-2 transition">
+                <i class="fa-solid fa-plus"></i> เพิ่มบทความใหม่
+            </button>
+        </header>
+
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4">
+            <div class="relative flex-1">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400"></i>
+                <input type="text" id="search-input" onkeyup="filterArticles()" placeholder="ค้นหาบทความ..."
+                    class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-green-500">
+            </div>
+            <select id="filter-category" onchange="filterArticles()"
+                class="px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-green-500 bg-white">
+                <option value="all">ทุกหมวดหมู่</option>
+                <option value="disease">โรคข้าว</option>
+                <option value="pest">แมลง/ศัตรูพืช</option>
+                <option value="fertilizer">ปุ๋ย/การบำรุง</option>
+                <option value="care">การดูแลรักษา</option>
+                <option value="news">ข่าวสาร</option>
+            </select>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="p-4 text-sm font-bold text-gray-600">ID</th>
+                            <th class="p-4 text-sm font-bold text-gray-600">รูปปก</th>
+                            <th class="p-4 text-sm font-bold text-gray-600">หัวข้อเรื่อง</th>
+                            <th class="p-4 text-sm font-bold text-gray-600">หมวดหมู่</th>
+                            <th class="p-4 text-sm font-bold text-gray-600">ยอดวิว</th>
+                            <th class="p-4 text-sm font-bold text-gray-600">แก้ไขล่าสุด</th>
+                            <th class="p-4 text-sm font-bold text-gray-600 text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="article-table-body" class="divide-y divide-gray-100">
+                        <tr>
+                            <td colspan="7" class="p-8 text-center text-gray-400">กำลังโหลดข้อมูล...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="article-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div
+            class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all scale-100">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
+                <h3 class="text-xl font-bold text-gray-800" id="modal-title">เพิ่มบทความใหม่</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500"><i
+                        class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="article-id">
+                <input type="hidden" id="old-image">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">หัวข้อบทความ <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="inp-title"
+                            class="w-full px-4 py-2 rounded-xl border border-gray-300 focus:border-green-500 focus:outline-none"
+                            placeholder="เช่น โรคไหม้ในข้าว">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">หมวดหมู่ <span
+                                class="text-red-500">*</span></label>
+                        <select id="inp-category"
+                            class="w-full px-4 py-2 rounded-xl border border-gray-300 focus:border-green-500 focus:outline-none bg-white">
+                            <option value="disease">โรคข้าว</option>
+                            <option value="pest">แมลง/ศัตรูพืช</option>
+                            <option value="fertilizer">ปุ๋ย/การบำรุง</option>
+                            <option value="care">การดูแลรักษา</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">คำอธิบายย่อ (แสดงหน้าการ์ด)</label>
+                    <textarea id="inp-description" rows="2"
+                        class="w-full px-4 py-2 rounded-xl border border-gray-300 focus:border-green-500 focus:outline-none resize-none"
+                        placeholder="เช่น เกิดจากเชื้อรา... (ข้อความสั้นๆ ดึงดูดความสนใจ)"></textarea>
+                </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">เนื้อหา (รองรับ HTML
+                            เบื้องต้น)</label>
+                        <textarea id="inp-content" rows="8"
+                            class="w-full px-4 py-2 rounded-xl border border-gray-300 focus:border-green-500 focus:outline-none resize-y"
+                            placeholder="พิมพ์เนื้อหาที่นี่..."></textarea>
+                        <p class="text-xs text-gray-400 mt-1">* สามารถใช้ &lt;b&gt;ตัวหนา&lt;/b&gt; หรือ &lt;br&gt;
+                            ขึ้นบรรทัดใหม่ได้</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">รูปภาพปก</label>
+                        <input type="file" id="inp-image" accept="image/*"
+                            class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                            onchange="previewImage()">
+
+                        <div id="preview-box"
+                            class="mt-4 hidden w-40 h-40 rounded-xl overflow-hidden border border-gray-200 relative group">
+                            <img id="img-preview" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 sticky bottom-0">
+                    <button onclick="closeModal()"
+                        class="px-6 py-2 text-gray-600 hover:bg-gray-200 rounded-xl font-bold transition">ยกเลิก</button>
+                    <button onclick="saveArticle()"
+                        class="px-6 py-2 bg-rice_green hover:bg-green-700 text-white rounded-xl font-bold shadow-md transition">บันทึกข้อมูล</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const API_URL = 'http://localhost:3000';
+            let allArticles = [];
+
+            document.addEventListener('DOMContentLoaded', async () => {
+                const storedUser = localStorage.getItem('rice_user');
+                if (!storedUser) { window.location.href = 'index.html'; return; }
+                currentUserInfo = JSON.parse(storedUser);
+                if (currentUserInfo.role !== 'admin') { alert('⛔ เฉพาะ Admin เท่านั้น'); window.location.href = 'home.html'; return; }
+                loadArticles();
+                updateSidebarBadge();
+            });
+
+
+            // 1. โหลดข้อมูลบทความ
+            async function loadArticles() {
+                try {
+                    const res = await fetch(`${API_URL}/admin/articles`);
+                    const json = await res.json();
+                    if (json.success) {
+                        allArticles = json.data;
+                        renderTable(allArticles);
+                    }
+                } catch (err) { console.error(err); }
+            }
+
+            // 2. แสดงตาราง
+            function renderTable(data) {
+                const tbody = document.getElementById('article-table-body');
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-400">ไม่พบข้อมูล</td></tr>';
+                    return;
+                }
+
+                const categoryMap = {
+                    'disease': '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold">โรคข้าว</span>',
+                    'pest': '<span class="bg-orange-100 text-orange-600 px-2 py-1 rounded text-xs font-bold">แมลง</span>',
+                    'fertilizer': '<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-bold">ปุ๋ย</span>',
+                    'care': '<span class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs font-bold">การดูแล</span>'
+                };
+
+                data.forEach(item => {
+                    const imgUrl = item.thumbnail ? `${API_URL}/uploads/${item.thumbnail}` : '/image/logo.png';
+                    const date = new Date(item.updated_at || item.created_at).toLocaleDateString('th-TH');
+
+                    const tr = `
+                    <tr class="hover:bg-gray-50 transition border-b border-gray-50 last:border-0">
+                        <td class="p-4 text-gray-500 font-mono text-sm">#${item.id}</td>
+                        <td class="p-4">
+                            <div class="w-12 h-12 rounded-lg overflow-hidden border border-gray-200">
+                                <img src="${imgUrl}" class="w-full h-full object-cover">
+                            </div>
+                        </td>
+                        <td class="p-4 font-bold text-gray-800">${item.title}</td>
+                        <td class="p-4">${categoryMap[item.category] || item.category}</td>
+                        <td class="p-4 text-gray-500 text-sm"><i class="fa-regular fa-eye"></i> ${item.views}</td>
+                        <td class="p-4 text-gray-500 text-sm">${date}</td>
+                        <td class="p-4 text-center">
+                            <div class="flex justify-center gap-2">
+                                <button onclick="editArticle(${item.id})" class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 transition flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteArticle(${item.id})" class="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                    tbody.innerHTML += tr;
+                });
+            }
+
+            // 3. Modal Control
+            function openModal(isEdit = false) {
+                document.getElementById('article-modal').classList.remove('hidden');
+                document.getElementById('article-modal').classList.add('flex');
+
+                if (!isEdit) {
+                    document.getElementById('modal-title').innerText = "เพิ่มบทความใหม่";
+                    document.getElementById('article-id').value = '';
+                    document.getElementById('inp-title').value = '';
+                    document.getElementById('inp-description').value = '';
+                    document.getElementById('inp-category').value = 'disease';
+                    document.getElementById('inp-content').value = '';
+                    document.getElementById('inp-image').value = '';
+                    document.getElementById('old-image').value = '';
+                    document.getElementById('preview-box').classList.add('hidden');
+                }
+            }
+
+            function closeModal() {
+                document.getElementById('article-modal').classList.add('hidden');
+                document.getElementById('article-modal').classList.remove('flex');
+            }
+
+            function previewImage() {
+                const file = document.getElementById('inp-image').files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.getElementById('img-preview').src = e.target.result;
+                        document.getElementById('preview-box').classList.remove('hidden');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // 4. บันทึกข้อมูล (Add / Edit)
+            async function saveArticle() {
+                const id = document.getElementById('article-id').value;
+                const title = document.getElementById('inp-title').value;
+                const category = document.getElementById('inp-category').value;
+                const content = document.getElementById('inp-content').value;
+                const description = document.getElementById('inp-description').value;
+                const fileInput = document.getElementById('inp-image');
+                const oldImage = document.getElementById('old-image').value;
+
+                if (!title) { alert('กรุณากรอกหัวข้อ'); return; }
+
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('description', description);
+                formData.append('category', category);
+                formData.append('content', content);
+
+                if (fileInput.files.length > 0) {
+                    formData.append('image', fileInput.files[0]);
+                }
+
+                let url = `${API_URL}/admin/articles`;
+                let action = 'เพิ่ม';
+
+                if (id) {
+                    url = `${API_URL}/admin/articles/update`;
+                    action = 'แก้ไข';
+                    formData.append('id', id);
+                    formData.append('old_image', oldImage); 
+                }
+
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        alert(`✅ ${action}บทความเรียบร้อย`);
+                        closeModal();
+                        loadArticles();
+                    } else {
+                        alert('❌ ' + json.message);
+                    }
+                } catch (e) { console.error(e); alert('Error'); }
+            }
+
+            // 5. แก้ไข 
+            function editArticle(id) {
+                const item = allArticles.find(a => a.id === id);
+                if (!item) return;
+
+                openModal(true);
+                document.getElementById('modal-title').innerText = "แก้ไขบทความ";
+                document.getElementById('article-id').value = item.id;
+                document.getElementById('inp-title').value = item.title;
+                document.getElementById('inp-category').value = item.category;
+                document.getElementById('inp-content').value = item.content;
+                document.getElementById('inp-description').value = item.description || '';
+                document.getElementById('old-image').value = item.thumbnail || '';
+
+                if (item.thumbnail) {
+                    document.getElementById('img-preview').src = `${API_URL}/uploads/${item.thumbnail}`;
+                    document.getElementById('preview-box').classList.remove('hidden');
+                }
+            }
+
+            // 6. ลบ
+            async function deleteArticle(id) {
+                if (!confirm('ต้องการลบบทความนี้ใช่หรือไม่?')) return;
+                try {
+                    const res = await fetch(`${API_URL}/admin/articles/${id}`, { method: 'DELETE' });
+                    const json = await res.json();
+                    if (json.success) {
+                        loadArticles();
+                    }
+                } catch (e) { alert('ลบไม่สำเร็จ'); }
+            }
+
+            // 7. ค้นหา/กรอง
+            function filterArticles() {
+                const text = document.getElementById('search-input').value.toLowerCase();
+                const cat = document.getElementById('filter-category').value;
+
+                const filtered = allArticles.filter(item => {
+                    const matchText = item.title.toLowerCase().includes(text);
+                    const matchCat = cat === 'all' || item.category === cat;
+                    return matchText && matchCat;
+                });
+                renderTable(filtered);
+            }
+
+            // ฟังก์ชันเมื่อกดที่แถวตาราง
+            async function viewDetail(id) {
+                try {
+
+                    localStorage.setItem('admin_view_case_id', id);
+                    window.location.href = 'admin_detail.html';
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+            // สคริปต์สำหรับโหลดจำนวนข้อความที่ยังไม่อ่าน 
+            document.addEventListener('DOMContentLoaded', () => {
+                updateSidebarBadge();
+
+ 
+                setInterval(updateSidebarBadge, 30000);
+            });
+
+            async function updateSidebarBadge() {
+                try {
+                    const res = await fetch('http://localhost:3000/admin/messages/unread-count');
+                    const json = await res.json();
+
+                    const badge = document.getElementById('sidebar-badge');
+
+                    if (badge && json.success) {
+                        if (json.count > 0) {
+                            badge.innerText = json.count; 
+                            badge.classList.remove('hidden'); 
+                            badge.classList.add('flex'); 
+                        } else {
+                            badge.classList.add('hidden');
+                        }
+                    }
+                } catch (err) {
+                    console.error("ไม่สามารถโหลดจำนวนข้อความได้", err);
+                }
+            }
+
+            function logout() { localStorage.removeItem('rice_user'); window.location.href = 'index.html'; }
+
+            async function updateSidebarBadge() {
+                try {
+                    const res = await fetch(`${API_URL}/admin/messages/unread-count`);
+                    const json = await res.json();
+                    const badge = document.getElementById('sidebar-badge');
+                    if (json.success && json.count > 0) {
+                        badge.innerText = json.count;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                } catch (e) { }
+            }
+        </script>
+</body>
+
+</html>
