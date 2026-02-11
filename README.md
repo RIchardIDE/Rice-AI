@@ -51,13 +51,12 @@ git clone https://github.com/RIchardIDE/rice-ai-web.git
 cd rice-ai-web  
 ```
 ### 2. Install SQL
-import rice_ai.sql 
-เปิด query run คำสั่งนี้ 2 คำสั่งนี้
-2.1 สมาชิก รหัสคือ 1234 ทั้งหมด
-🔑 ข้อมูลสำหรับ Login ทดสอบระบบ
-Admin: admin / 1234
-Expert: doctor1 / 1234
-Farmer: farmer1 / 1234
+import rice_ai.sql  เปิด query run คำสั่งนี้ 2 คำสั่งนี้
+  2.1 สมาชิก รหัสคือ 1234 ทั้งหมด
+  🔑 ข้อมูลสำหรับ Login ทดสอบระบบ
+  Admin: admin / 1234
+  Expert: doctor1 / 1234
+  Farmer: farmer1 / 1234
 
 ```bash
 INSERT INTO `users` (`id`, `username`, `password`, `first_name`, `last_name`, `email`, `phone`, `address`, `role`, `created_at`, `profile_image`) VALUES
