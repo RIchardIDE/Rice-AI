@@ -48,7 +48,6 @@
 ** เปิด PowerShell 
 ```bash
 git clone https://github.com/RIchardIDE/rice-ai-web.git
-cd rice-ai-web  
 ```
 ### 2. Install SQL
 import rice_ai.sql<br>
