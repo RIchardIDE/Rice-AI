@@ -171,17 +171,20 @@ INSERT INTO articles (id, title, description, category, content, thumbnail, view
 npm install
 ```
 ### 3. Python Tool
+download ให้ติดตั้ง python ver 3.10
 ```bash
-# สร้าง Virtual Environment
-python -m venv venv
-
-# เปิดใช้งาน (Activate)
+py install 3.10
+py -3.10 -m venv venv
+# เปิดใช้งาน
 .\venv\Scripts\activate
 
-# ติดตั้ง Library
+# เช็คว่าเป็น Python 3.10 จริงไหม (ต้องขึ้น 3.10.x)
+python --version
+
+# ติดตั้ง Library ใหม่
 pip install -r requirements.txt
 ```
-ถ้า download error ให้ติดตั้ง python ver 3.10
+
 #### ถ้าหากใน package.json ยังไม่มีบรรทัดนี้ 
 ```bash
 "start": "concurrently \"npm run server\" \"npm run dev\""
