@@ -178,7 +178,7 @@ py -3.10 -m venv venv
 # เปิดใช้งาน
 .\venv\Scripts\activate
 
-# เช็คว่าเป็น Python 3.10 จริงไหม (ต้องขึ้น 3.10.x)
+# เช็ค Python
 python --version
 
 # ติดตั้ง Library ใหม่
