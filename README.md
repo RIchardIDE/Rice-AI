@@ -53,7 +53,7 @@ cd rice-ai-web
 ### 2. Install SQL
 import rice_ai.sql 
 เปิด query run คำสั่งนี้ 2 คำสั่งนี้
-**2.1 สมาชิก รหัสคือ 1234 ทั้งหมด
+2.1 สมาชิก รหัสคือ 1234 ทั้งหมด
 🔑 ข้อมูลสำหรับ Login ทดสอบระบบ
 Admin: admin / 1234
 Expert: doctor1 / 1234
