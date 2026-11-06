@@ -104,3 +104,11 @@ Rice AI Analysis ถูกออกแบบให้เป็นศูนย์
 - **Frontend API URL:** Set `VITE_API_URL` in Vercel to the public Render backend URL before deploying.
 - **CORS:** Set `FRONTEND_URL` in Render to the Vercel project URL.
 - **Database migration:** Run `rice_ai.sql`, then `migrations/001_add_banned_to_users.sql` for the account suspension column.
+
+## Development and Production
+
+- **Development:** use `.env.development` with the separate `rice_ai_dev` database and run `npm run dev:full`.
+- **Production:** Render runs `npm start` with `NODE_ENV=production`; missing database credentials, CORS origin, or `AUTH_SECRET` stops the service from starting.
+- **Vercel:** set `VITE_API_URL` to the public Render URL and keep production secrets in the platform environment settings.
+- Authentication uses short-lived signed tokens, role checks, ownership checks, rate limiting, security headers, and restricted image uploads.
+- Never commit real `.env` files, database passwords, API keys, or production user data.

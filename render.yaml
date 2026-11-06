@@ -7,6 +7,10 @@ services:
     dockerContext: .
     healthCheckPath: /health
     envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_SECRET
+        sync: false
       - key: DB_HOST
         sync: false
       - key: DB_PORT

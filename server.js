@@ -7,24 +7,75 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
-import nodemailer from 'nodemailer';
 import crypto from 'crypto';    
-
-// ตั้งค่า Nodemailer จาก environment variables เท่านั้น
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASS;
-const transporter = smtpUser && smtpPass
-    ? nodemailer.createTransport({
-        service: process.env.SMTP_SERVICE || 'gmail',
-        auth: { user: smtpUser, pass: smtpPass }
-    })
-    : null;
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const isProduction = process.env.NODE_ENV === 'production';
 const port = Number(process.env.PORT || 3000);
+const authSecret = process.env.AUTH_SECRET || crypto.randomBytes(32).toString('hex');
+
+if (isProduction) {
+    const requiredProductionEnv = ['AUTH_SECRET', 'DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME', 'FRONTEND_URL'];
+    const missingProductionEnv = requiredProductionEnv.filter(key => !process.env[key]);
+    if (missingProductionEnv.length || process.env.AUTH_SECRET.length < 32) {
+        throw new Error(`Missing or invalid production environment variables: ${missingProductionEnv.join(', ') || 'AUTH_SECRET'}`);
+    }
+}
+
+app.set('trust proxy', isProduction ? 1 : false);
+
+const jsonBase64 = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+const createAuthToken = user => {
+    const payload = jsonBase64({
+        sub: Number(user.id),
+        role: user.role,
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 12
+    });
+    const signature = crypto.createHmac('sha256', authSecret).update(payload).digest('base64url');
+    return `${payload}.${signature}`;
+};
+
+const verifyAuthToken = token => {
+    const [payload, signature] = String(token || '').split('.');
+    if (!payload || !signature) return null;
+
+    const expected = crypto.createHmac('sha256', authSecret).update(payload).digest();
+    const received = Buffer.from(signature, 'base64url');
+    if (expected.length !== received.length || !crypto.timingSafeEqual(expected, received)) return null;
+
+    const decoded = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    if (!decoded.sub || !decoded.exp || decoded.exp < Math.floor(Date.now() / 1000)) return null;
+    return { id: Number(decoded.sub), role: decoded.role };
+};
+
+const authenticate = (req, res, next) => {
+    try {
+        const token = req.get('authorization')?.replace(/^Bearer\s+/i, '');
+        const user = verifyAuthToken(token);
+        if (!user) return res.status(401).json({ success: false, message: 'กรุณาเข้าสู่ระบบใหม่' });
+        req.user = user;
+        next();
+    } catch {
+        res.status(401).json({ success: false, message: 'ข้อมูลยืนยันตัวตนไม่ถูกต้อง' });
+    }
+};
+
+const requireRole = (...roles) => (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+        return res.status(403).json({ success: false, message: 'ไม่มีสิทธิ์ใช้งานส่วนนี้' });
+    }
+    next();
+};
+
+const canAccessUser = (req, userId) =>
+    ['admin', 'expert'].includes(req.user?.role) || Number(req.user?.id) === Number(userId);
+
+const validPassword = value => typeof value === 'string' && value.length >= 8 && value.length <= 128;
 
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
@@ -66,13 +117,15 @@ app.use(cors({
         callback(new Error('Origin is not allowed by CORS'));
     }
 }));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: false }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
-app.use('/uploads', express.static('uploads'));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+app.use('/uploads', express.static(uploadsDir, { dotfiles: 'deny', index: false }));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/src', express.static(path.join(__dirname, 'src')));
 
@@ -87,10 +140,74 @@ app.get('/:page.html', (req, res, next) => {
     res.sendFile(path.join(__dirname, pageName));
 });
 
-const upload = multer({ dest: 'uploads/' });
-if (!fs.existsSync('uploads')) {
-    fs.mkdirSync('uploads');
-}
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 300,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { success: false, message: 'คำขอมากเกินไป กรุณาลองใหม่ภายหลัง' }
+});
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { success: false, message: 'พยายามเข้าสู่ระบบมากเกินไป กรุณารอสักครู่' }
+});
+app.use(apiLimiter);
+app.use(['/login', '/register', '/forgot-password', '/reset-password'], authLimiter);
+
+const publicApiRequest = req => (
+    (req.method === 'GET' && req.path === '/health') ||
+    (req.method === 'POST' && ['/login', '/register', '/forgot-password', '/reset-password', '/api/contact'].includes(req.path)) ||
+    (req.method === 'GET' && req.path === '/get-global-outbreak') ||
+    (req.method === 'GET' && /^\/admin\/articles(?:\/\d+)?$/.test(req.path)) ||
+    (req.method === 'PUT' && /^\/articles\/increment-view\/\d+$/.test(req.path))
+);
+
+app.use((req, res, next) => {
+    if (publicApiRequest(req)) return next();
+    authenticate(req, res, next);
+});
+
+app.use('/admin', (req, res, next) => {
+    if (req.method === 'GET' && /^\/articles(?:\/\d+)?$/.test(req.path)) return next();
+    requireRole('admin')(req, res, next);
+});
+app.use('/expert', requireRole('expert', 'admin'));
+app.use((req, res, next) => {
+    if (['/get-pending-cases', '/review-case'].includes(req.path)) {
+        return requireRole('expert', 'admin')(req, res, next);
+    }
+    next();
+});
+
+app.use((req, res, next) => {
+    const pathUserMatch = req.path.match(/^\/(?:get-history-list|get-latest-history|get-user-profile|get-notifications|notifications\/unread-count|notifications\/mark-all-read)\/(\d+)$/);
+    const bodyUserId = ['/save-history', '/update-user', '/update-user-profile', '/update-account-settings', '/upload-profile-image'].includes(req.path)
+        ? (req.body.user_id || req.body.id)
+        : null;
+    const requestedUserId = pathUserMatch?.[1] || bodyUserId;
+    if (requestedUserId && !canAccessUser(req, requestedUserId)) {
+        return res.status(403).json({ success: false, message: 'ไม่สามารถเข้าถึงข้อมูลของผู้ใช้อื่นได้' });
+    }
+    next();
+});
+
+const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const imageFileFilter = (req, file, cb) => {
+    const extension = path.extname(file.originalname).toLowerCase();
+    const allowedExtensions = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+    if (!allowedImageTypes.has(file.mimetype) || !allowedExtensions.has(extension)) {
+        return cb(new Error('รองรับเฉพาะไฟล์ JPG, PNG หรือ WebP'));
+    }
+    cb(null, true);
+};
+const imageUploadOptions = {
+    limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+    fileFilter: imageFileFilter
+};
+const upload = multer({ dest: uploadsDir, ...imageUploadOptions });
 
 // ==========================================
 // 1. API Predict (วิเคราะห์โรค)
@@ -149,7 +266,9 @@ app.post('/save-history', async (req, res) => {
             status = 'pending_expert';
         }
 
-        const userIdToSave = user_id ? user_id : null;
+        const userIdToSave = ['admin', 'expert'].includes(req.user.role) && user_id
+            ? user_id
+            : req.user.id;
         const saveTime = timestamp ? new Date(timestamp) : new Date();
 
         const sql = `
@@ -252,16 +371,16 @@ app.post('/review-case', async (req, res) => {
 
 // สมัครสมาชิก
 app.post('/register', async (req, res) => {
-    const { username, password, first_name, last_name, email, phone, role } = req.body;
+    const { username, password, first_name, last_name, email, phone } = req.body;
 
-    if (!username || !password || !first_name || !last_name || !email || !phone || !role) {
+    if (!username || username.length > 50 || !validPassword(password) || !first_name || !last_name || !email || !phone) {
         return res.status(400).json({ success: false, message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
     }
 
     try {
         const hash = await bcrypt.hash(password, 10);
         const sql = "INSERT INTO users (username, password, first_name, last_name, email, phone, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        await pool.query(sql, [username, hash, first_name, last_name, email, phone, role]);
+        await pool.query(sql, [username, hash, first_name, last_name, email, phone, 'farmer']);
 
         res.json({ success: true, message: 'สมัครสมาชิกสำเร็จ' });
 
@@ -298,6 +417,7 @@ app.post('/login', async (req, res) => {
             success: true,
             message: "เข้าสู่ระบบสำเร็จ",
             user: {
+                token: createAuthToken(user),
                 id: user.id,
                 username: user.username,
                 first_name: user.first_name,
@@ -421,28 +541,27 @@ app.post('/update-account-settings', async (req, res) => {
 // ตั้งค่าที่เก็บรูปโปรไฟล์ (เก็บในโฟลเดอร์ uploads/profiles)
 const profileStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = 'uploads/profiles/';
+        const dir = path.join(uploadsDir, 'profiles');
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
-        cb(null, dir);
+            cb(null, dir);
     },
     filename: (req, file, cb) => {
         cb(null, `user-${Date.now()}${path.extname(file.originalname)}`);
     }
 });
 
-const uploadProfile = multer({ storage: profileStorage });
+const uploadProfile = multer({ storage: profileStorage, ...imageUploadOptions });
 
 // API อัปโหลด
 app.post('/upload-profile-image', uploadProfile.single('profile_pic'), async (req, res) => {
     try {
         const userId = req.body.user_id;
-        const filename = req.file.filename;
-
         if (!userId || !req.file) {
             return res.status(400).json({ success: false, message: "ข้อมูลไม่ครบถ้วน" });
         }
+        const filename = req.file.filename;
 
         await pool.execute("UPDATE users SET profile_image = ? WHERE id = ?", [filename, userId]);
 
@@ -641,6 +760,10 @@ app.post('/admin/add-user', async (req, res) => {
     try {
         const { username, password, first_name, last_name, role } = req.body;
 
+        if (!username || username.length > 50 || !validPassword(password) || !first_name || !last_name || !['farmer', 'expert', 'admin'].includes(role)) {
+            return res.status(400).json({ success: false, message: "ข้อมูลผู้ใช้ไม่ถูกต้อง" });
+        }
+
         // 1. เช็คซ้ำ
         const [existing] = await pool.query("SELECT id FROM users WHERE username = ?", [username]);
         if (existing.length > 0) {
@@ -753,7 +876,7 @@ app.get('/admin/get-dashboard-stats', async (req, res) => {
 // ตั้งค่า Multer สำหรับอัปโหลดรูป
 const contactStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); 
+        cb(null, uploadsDir);
     },
     filename: (req, file, cb) => {
 
@@ -762,7 +885,7 @@ const contactStorage = multer.diskStorage({
     }
 });
 
-const uploadContact = multer({ storage: contactStorage });
+const uploadContact = multer({ storage: contactStorage, ...imageUploadOptions });
 
 
 // API ติดต่อเรา (Contact Us)
@@ -896,14 +1019,14 @@ app.get('/get-notifications/:userId', async (req, res) => {
 // ตั้งค่า Upload สำหรับบทความ
 const articleStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); 
+        cb(null, uploadsDir);
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         cb(null, 'article-' + uniqueSuffix + path.extname(file.originalname));
     }
 });
-const uploadArticle = multer({ storage: articleStorage });
+const uploadArticle = multer({ storage: articleStorage, ...imageUploadOptions });
 
 // 1. ดึงบทความทั้งหมด (GET)
 app.get('/admin/articles', async (req, res) => {
@@ -1119,9 +1242,11 @@ app.get('/expert/disease-stats', async (req, res) => {
 // ==========================================
 app.post('/forgot-password', async (req, res) => {
     const { contact, method } = req.body;
-    console.log(`[Forgot] Request for: ${contact} via ${method}`);
 
     if (!contact) return res.status(400).json({ success: false, message: 'กรุณากรอกข้อมูล' });
+    if (isProduction) {
+        return res.status(503).json({ success: false, message: 'ระบบรีเซ็ตรหัสผ่านยังไม่เปิดใช้งานบน Production' });
+    }
 
     try {
 
@@ -1133,13 +1258,14 @@ app.post('/forgot-password', async (req, res) => {
         }
 
         const userId = users[0].id;
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // สร้าง OTP 6 หลัก
+        const otp = crypto.randomInt(100000, 1000000).toString(); // สร้าง OTP 6 หลัก
+        const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // หมดอายุใน 15 นาที
 
 
         await pool.query(
             'INSERT INTO password_resets (user_id, token, type, expires_at) VALUES (?, ?, ?, ?)',
-            [userId, otp, method, expiresAt]
+            [userId, otpHash, method, expiresAt]
         );
 
         if (method === 'email') {
@@ -1169,12 +1295,15 @@ app.post('/forgot-password', async (req, res) => {
 // ==========================================
 app.post('/reset-password', async (req, res) => {
     const { token, newPassword } = req.body;
-    console.log(`[Reset] Attempt with token: ${token}`);
+    if (!token || !validPassword(newPassword)) {
+        return res.status(400).json({ success: false, message: 'รหัส OTP หรือรหัสผ่านใหม่ไม่ถูกต้อง' });
+    }
 
     try {
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
         const [rows] = await pool.query(
             'SELECT * FROM password_resets WHERE token = ? AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1',
-            [token]
+            [tokenHash]
         );
 
         if (rows.length === 0) {
@@ -1185,7 +1314,7 @@ app.post('/reset-password', async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await pool.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userId]);
-        await pool.query('DELETE FROM password_resets WHERE token = ?', [token]);
+        await pool.query('DELETE FROM password_resets WHERE token = ?', [tokenHash]);
         res.json({ success: true, message: 'เปลี่ยนรหัสผ่านสำเร็จ' });
 
     } catch (err) {
@@ -1225,6 +1354,17 @@ app.post('/api/articles/edit/:id', async (req, res) => {
         console.error("Update Article Error:", error);
         res.status(500).json({ success: false, message: "Database error" });
     }
+});
+
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError || err.message?.includes('รองรับเฉพาะไฟล์')) {
+        return res.status(400).json({ success: false, message: err.message || 'ไฟล์ไม่ถูกต้อง' });
+    }
+    if (err.message === 'Origin is not allowed by CORS') {
+        return res.status(403).json({ success: false, message: 'Origin is not allowed' });
+    }
+    console.error('Unhandled server error:', err);
+    res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' });
 });
 
 
