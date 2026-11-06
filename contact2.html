@@ -23,6 +23,7 @@
             }
         }
     </script>
+    <script src="/api-config.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen flex flex-col font-sans">
@@ -271,7 +272,7 @@
 
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const API_URL = 'http://localhost:3000';
+const API_URL = window.RICE_API_URL || '';
             const storedUser = localStorage.getItem('rice_user');
             const navImg = document.getElementById('nav-profile-img');
 
@@ -335,7 +336,7 @@
 
 
             try {
-                const res = await fetch('http://localhost:3000/api/contact', {
+                const res = await fetch((window.RICE_API_URL || '') + '/api/contact', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, phone, subject, message })
@@ -409,7 +410,7 @@
             if (fileEl.files.length > 0) formData.append('image', fileEl.files[0]);
 
             try {
-                const res = await fetch('http://localhost:3000/api/contact', { method: 'POST', body: formData });
+                const res = await fetch((window.RICE_API_URL || '') + '/api/contact', { method: 'POST', body: formData });
                 const json = await res.json();
                 if (json.success) {
                     alert('✅ ส่งข้อความเรียบร้อย ทางทีมงานจะรีบตรวจสอบครับ');
@@ -431,7 +432,7 @@
 
         async function updateUserBadge(userId) {
             try {
-                const res = await fetch(`http://localhost:3000/notifications/unread-count/${userId}`);
+                const res = await fetch(`${window.RICE_API_URL || ''}/notifications/unread-count/${userId}`);
                 const json = await res.json();
 
                 const count = json.count;

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8" />
+    <title>แก้ไขบทความ</title>
+    <script src="/api-config.js"></script>
+</head>
+<body>
+    <h2>แก้ไขโรคข้าว</h2>
+    <input type="text" id="edit-title" placeholder="ชื่อโรคข้าว"><br><br>
+    <textarea id="edit-desc" placeholder="รายละเอียด"></textarea><br><br>
+    <button onclick="saveEdit()">บันทึกการแก้ไข</button>
+
+    <script>
+        // สมมติว่า URL คือ edit-article.html?id=1 (เราดึงเลข 1 มาใช้)
+        const urlParams = new URLSearchParams(window.location.search);
+        const articleId = urlParams.get('id');
+        if (!articleId) {
+            alert('ไม่พบรหัสบทความ');
+            window.location.href = 'admin_knowledge.html';
+        }
+
+        // 1. ดึงข้อมูลเดิมมาใส่ฟอร์ม (ตามโจทย์ข้อ 2)
+        fetch(`${window.RICE_API_URL || ''}/api/articles/${articleId}`)
+            .then(res => {
+                if (!res.ok) throw new Error('โหลดบทความไม่สำเร็จ');
+                return res.json();
+            })
+            .then(data => {
+                // เอาข้อมูลเก่า ยัดใส่ช่อง input
+                document.getElementById('edit-title').value = data.title;
+                document.getElementById('edit-desc').value = data.description;
+            });
+
+        // 2. ฟังก์ชันส่งข้อมูลใหม่ไปอัปเดต
+        function saveEdit() {
+            const newTitle = document.getElementById('edit-title').value;
+            const newDesc = document.getElementById('edit-desc').value;
+
+
+            // ส่งเป็น POST ไปหลังบ้าน (ตามโจทย์สั่ง)
+            fetch(`${window.RICE_API_URL || ''}/api/articles/edit/${articleId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: newTitle, description: newDesc })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('บันทึกบทความไม่สำเร็จ');
+                return res.json();
+            })
+            .then(data => {
+                if(data.success) {
+                    alert('บันทึกสำเร็จ!');
+                    // 3. Redirect กลับไปหน้าเดิม (ตามโจทย์ข้อ 2 ของ Backend)
+                    window.location.href = 'admin_knowledge.html';
+                }
+            })
+            .catch(error => alert(error.message));
+        }
+    </script>
+</body>
+</html>

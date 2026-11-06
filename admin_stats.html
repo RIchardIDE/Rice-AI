@@ -39,6 +39,7 @@
             z-index: 1;
         }
     </style>
+    <script src="/api-config.js"></script>
 </head>
 
 <body class="bg-light_bg text-gray-800 font-sans min-h-screen">
@@ -180,7 +181,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        const API_URL = 'http://localhost:3000';
+const API_URL = window.RICE_API_URL || '';
 
         document.addEventListener('DOMContentLoaded', async () => {
                 const storedUser = localStorage.getItem('rice_user');
@@ -301,7 +302,7 @@
         async function updateSidebarBadge() {
             try {
 
-                const res = await fetch('http://localhost:3000/admin/messages/unread-count');
+                const res = await fetch((window.RICE_API_URL || '') + '/admin/messages/unread-count');
                 const json = await res.json();
 
                 const badge = document.getElementById('sidebar-badge');

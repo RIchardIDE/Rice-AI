@@ -10,26 +10,28 @@ import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';    
 
-// ตั้งค่า Nodemailer
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'your-email@gmail.com', 
-        pass: 'your-app-password'    
-    }
-});
+// ตั้งค่า Nodemailer จาก environment variables เท่านั้น
+const smtpUser = process.env.SMTP_USER;
+const smtpPass = process.env.SMTP_PASS;
+const transporter = smtpUser && smtpPass
+    ? nodemailer.createTransport({
+        service: process.env.SMTP_SERVICE || 'gmail',
+        auth: { user: smtpUser, pass: smtpPass }
+    })
+    : null;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = 3000;
+const port = Number(process.env.PORT || 3000);
 
 const dbConfig = {
-    host: 'localhost',
-    user: 'rice_admin',
-    password: 'rice1234',
-    database: 'rice_ai',
+    host: process.env.DB_HOST || 'localhost',
+    port: Number(process.env.DB_PORT || 3306),
+    user: process.env.DB_USER || '',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'rice_ai',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -38,22 +40,52 @@ const dbConfig = {
 
 const pool = mysql.createPool(dbConfig);
 
-// เช็คการเชื่อมต่อ
-pool.getConnection()
-    .then(conn => {
-        console.log('✅ Connected to MySQL Database successfully!');
-        conn.release();
-    })
-    .catch(err => {
-        console.error('❌ Database Connection Failed:', err.message);
-    });
+// เช็คการเชื่อมต่อเมื่อมีการตั้งค่า database ครบถ้วน
+if (dbConfig.user) {
+    pool.getConnection()
+        .then(conn => {
+            console.log('✅ Connected to MySQL Database successfully!');
+            conn.release();
+        })
+        .catch(err => {
+            console.error('❌ Database Connection Failed:', err.message);
+        });
+} else {
+    console.warn('⚠️ Database credentials are not configured. Set DB_HOST, DB_USER, DB_PASSWORD and DB_NAME.');
+}
 
-app.use(cors());
+const allowedOrigins = (process.env.FRONTEND_URL || '')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        callback(new Error('Origin is not allowed by CORS'));
+    }
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
 app.use('/uploads', express.static('uploads'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/src', express.static(path.join(__dirname, 'src')));
+
+// Serve static HTML pages when the backend is deployed as a Render service.
+const htmlPages = new Set(
+    fs.readdirSync(__dirname).filter(fileName => fileName.toLowerCase().endsWith('.html'))
+);
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/:page.html', (req, res, next) => {
+    const pageName = `${req.params.page}.html`;
+    if (!htmlPages.has(pageName)) return next();
+    res.sendFile(path.join(__dirname, pageName));
+});
 
 const upload = multer({ dest: 'uploads/' });
 if (!fs.existsSync('uploads')) {
@@ -253,6 +285,9 @@ app.post('/login', async (req, res) => {
         }
 
         const user = users[0];
+        if (user.banned) {
+            return res.status(403).json({ success: false, message: "บัญชีของคุณถูกระงับการใช้งานแล้ว" });
+        }
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
@@ -267,7 +302,8 @@ app.post('/login', async (req, res) => {
                 username: user.username,
                 first_name: user.first_name,
                 last_name: user.last_name,
-                role: user.role
+                role: user.role,
+                banned: Boolean(user.banned)
             }
         });
 
@@ -554,11 +590,25 @@ app.get('/admin/get-case-detail/:id', async (req, res) => {
 // ดึงรายชื่อ User ทั้งหมด
 app.get('/admin/get-all-users', async (req, res) => {
     try {
-        const [rows] = await pool.query("SELECT id, username, first_name, last_name, role, created_at, phone, address FROM users ORDER BY id DESC");
+        const [rows] = await pool.query("SELECT id, username, first_name, last_name, role, created_at, phone, address, banned FROM users ORDER BY id DESC");
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// ระงับบัญชีผู้ใช้งาน (ไม่อนุญาตให้ระงับ Admin)
+app.post('/admin/ban-user/:id', async (req, res) => {
+    try {
+        const [result] = await pool.query("UPDATE users SET banned = 1 WHERE id = ? AND role != 'admin'", [req.params.id]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: "ไม่พบผู้ใช้หรือไม่สามารถระงับบัญชี Admin ได้" });
+        }
+        res.json({ success: true, message: "ระงับบัญชีเรียบร้อยแล้ว" });
+    } catch (error) {
+        console.error("Ban User Error:", error);
+        res.status(500).json({ success: false, message: "ระงับบัญชีไม่สำเร็จ" });
     }
 });
 
@@ -1144,6 +1194,38 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
+// API สำหรับหน้าแก้ไขบทความ
+app.get('/api/articles/:id', async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            "SELECT title, description FROM articles WHERE id = ?",
+            [req.params.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: "Article not found" });
+        res.json(rows[0]);
+    } catch (error) {
+        console.error("Get Article Error:", error);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
+app.post('/api/articles/edit/:id', async (req, res) => {
+    const { title, description } = req.body;
+    if (!title || !description) {
+        return res.status(400).json({ success: false, message: "กรุณากรอกหัวข้อและรายละเอียด" });
+    }
+    try {
+        const [result] = await pool.query(
+            "UPDATE articles SET title = ?, description = ?, updated_at = NOW() WHERE id = ?",
+            [title.trim(), description.trim(), req.params.id]
+        );
+        if (result.affectedRows === 0) return res.status(404).json({ success: false, message: "ไม่พบบทความ" });
+        res.json({ success: true, message: "อัปเดตเรียบร้อย" });
+    } catch (error) {
+        console.error("Update Article Error:", error);
+        res.status(500).json({ success: false, message: "Database error" });
+    }
+});
 
 
 

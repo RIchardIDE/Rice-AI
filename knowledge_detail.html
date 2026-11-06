@@ -35,6 +35,7 @@
         .fade-up { animation: fadeUp 0.6s ease-out; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
+    <script src="/api-config.js"></script>
 </head>
 
 <body class="bg-bg_soft font-sans text-gray-700 min-h-screen flex flex-col">
@@ -113,7 +114,7 @@
     </main>
 
     <script>
-        const API_URL = 'http://localhost:3000';
+const API_URL = window.RICE_API_URL || '';
 
         document.addEventListener('DOMContentLoaded', async () => {
             const params = new URLSearchParams(window.location.search);

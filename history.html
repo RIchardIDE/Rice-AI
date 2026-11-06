@@ -2,6 +2,7 @@
 <html lang="th">
 
 <head>
+    <script src="/api-config.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ประวัติการวิเคราะห์ - Rice AI</title>
@@ -234,7 +235,7 @@
                 }
                 const currentUser = JSON.parse(storedUser); 
 
-                const response = await fetch(`http://localhost:3000/get-history-list/${currentUser.id}`);
+                const response = await fetch(`${window.RICE_API_URL || ''}/get-history-list/${currentUser.id}`);
                 const data = await response.json();
 
                 if (data && Array.isArray(data)) {
@@ -387,7 +388,7 @@
 
             try {
 
-                const response = await fetch('http://localhost:3000/get-global-outbreak');
+                const response = await fetch((window.RICE_API_URL || '') + '/get-global-outbreak');
                 const json = await response.json();
 
                 if (json.success && json.data) {
@@ -410,7 +411,7 @@
 
         // สคริปต์สำหรับโหลดรูปโปรไฟล์ใส่ Navbar (ใช้ได้กับทุกหน้า)
         document.addEventListener('DOMContentLoaded', async () => {
-            const API_URL = 'http://localhost:3000';
+const API_URL = window.RICE_API_URL || '';
             const storedUser = localStorage.getItem('rice_user');
             const navImg = document.getElementById('nav-profile-img');
 
@@ -447,7 +448,7 @@
 
         async function updateUserBadge(userId) {
             try {
-                const res = await fetch(`http://localhost:3000/notifications/unread-count/${userId}`);
+                const res = await fetch(`${window.RICE_API_URL || ''}/notifications/unread-count/${userId}`);
                 const json = await res.json();
 
                 const count = json.count;

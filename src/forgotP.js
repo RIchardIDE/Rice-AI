@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = window.RICE_API_URL || '';
 
 const btnPhone = document.getElementById('btn-phone');
 const btnEmail = document.getElementById('btn-email');

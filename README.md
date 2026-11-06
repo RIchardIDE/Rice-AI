@@ -95,3 +95,12 @@ Rice AI Analysis ถูกออกแบบให้เป็นศูนย์
 
 - [คู่มือการใช้งาน](docs/คู่มือการใช้งาน.pdf)
 - [รายงาน Rice AI Analysis](docs/Rice%20AI%20Analysis.pdf)
+
+## Deployment Architecture
+
+- **Frontend:** Vercel builds the multi-page Vite frontend from the repository.
+- **Backend:** Render runs the Node.js API and Python/TensorFlow inference service with the included `Dockerfile`.
+- **Database:** MySQL is provided as an external managed database; credentials are configured through Render environment variables.
+- **Frontend API URL:** Set `VITE_API_URL` in Vercel to the public Render backend URL before deploying.
+- **CORS:** Set `FRONTEND_URL` in Render to the Vercel project URL.
+- **Database migration:** Run `rice_ai.sql`, then `migrations/001_add_banned_to_users.sql` for the account suspension column.

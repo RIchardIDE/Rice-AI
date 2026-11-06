@@ -7,6 +7,7 @@
     <title>Rice AI - สร้างบัญชีใหม่</title>
     <link rel="stylesheet" href="./src/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/api-config.js"></script>
 </head>
 
 <body class="bg-primary-bg min-h-screen w-full font-sans flex items-center justify-center p-4">
@@ -275,7 +276,7 @@
             btn.classList.add('opacity-75', 'cursor-not-allowed');
 
             try {
-                const res = await fetch('http://localhost:3000/register', {
+                const res = await fetch((window.RICE_API_URL || '') + '/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

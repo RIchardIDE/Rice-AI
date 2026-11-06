@@ -66,6 +66,7 @@
             background-size: 20px 20px;
         }
     </style>
+    <script src="/api-config.js"></script>
 </head>
 
 <body class="bg-[#F3F4F6] text-gray-800 h-screen overflow-hidden flex flex-col">
@@ -516,7 +517,7 @@
                     formData.append('variety_risk', varietyRisk);
                     formData.append('weather', weather);
 
-                    return fetch('http://localhost:3000/predict', {
+                    return fetch((window.RICE_API_URL || '') + '/predict', {
                         method: 'POST',
                         body: formData
                     }).then(res => res.json());
@@ -773,7 +774,7 @@
 
             try {
                 //ส่งข้อมูลไปที่ Backend
-                const response = await fetch('http://localhost:3000/save-history', {
+                const response = await fetch((window.RICE_API_URL || '') + '/save-history', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -818,7 +819,7 @@
 
         // สคริปต์สำหรับโหลดรูปโปรไฟล์ใส่ Navbar 
         document.addEventListener('DOMContentLoaded', async () => {
-            const API_URL = 'http://localhost:3000';
+const API_URL = window.RICE_API_URL || '';
             const storedUser = localStorage.getItem('rice_user');
             const navImg = document.getElementById('nav-profile-img');
 
@@ -854,7 +855,7 @@
 
         async function updateUserBadge(userId) {
             try {
-                const res = await fetch(`http://localhost:3000/notifications/unread-count/${userId}`);
+                const res = await fetch(`${window.RICE_API_URL || ''}/notifications/unread-count/${userId}`);
                 const json = await res.json();
 
                 const count = json.count;

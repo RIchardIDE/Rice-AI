@@ -46,7 +46,7 @@
                 const storedUser = localStorage.getItem('rice_user');
                 if (storedUser) {
                     const user = JSON.parse(storedUser);
-                    fetch(`http://localhost:3000/notifications/mark-all-read/${user.id}`, { method: 'PUT' });
+                    fetch(`${window.RICE_API_URL || ''}/notifications/mark-all-read/${user.id}`, { method: 'PUT' });
 
                     const badges = document.querySelectorAll('#nav-badge-desktop, #nav-badge-mobile, #inner-noti-badge');
                     badges.forEach(b => b.classList.add('hidden'));
@@ -54,6 +54,7 @@
             }
         }
     </script>
+    <script src="/api-config.js"></script>
 </head>
 
 <body class="bg-light_bg font-sans text-[#2D3748] min-h-screen pb-10">
@@ -356,7 +357,7 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3000';
+const API_URL = window.RICE_API_URL || '';
         let currentUser = null;
 
         document.addEventListener('DOMContentLoaded', async () => {

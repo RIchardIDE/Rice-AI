@@ -27,6 +27,7 @@
             }
         }
     </script>
+    <script src="/api-config.js"></script>
 </head>
 
 <body class="bg-light_bg text-gray-800 font-sans min-h-screen flex overflow-hidden">
@@ -216,7 +217,7 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3000';
+const API_URL = window.RICE_API_URL || '';
         let allMessages = [];
         let currentMsgId = null;
 
