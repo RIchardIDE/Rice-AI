@@ -10,7 +10,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: AUTH_SECRET
-        sync: false
+        generateValue: true
       - key: DB_HOST
         sync: false
       - key: DB_PORT
@@ -22,10 +22,4 @@ services:
       - key: DB_NAME
         value: rice_ai
       - key: FRONTEND_URL
-        sync: false
-      - key: SMTP_SERVICE
-        value: gmail
-      - key: SMTP_USER
-        sync: false
-      - key: SMTP_PASS
         sync: false
