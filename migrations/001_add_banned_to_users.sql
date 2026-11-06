@@ -1,3 +1,3 @@
--- Add account suspension support to existing databases.
-ALTER TABLE `users`
-    ADD COLUMN IF NOT EXISTS `banned` tinyint(1) NOT NULL DEFAULT 0 AFTER `role`;
+-- PostgreSQL migration: add account suspension support.
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS banned smallint NOT NULL DEFAULT 0;

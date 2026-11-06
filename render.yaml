@@ -11,17 +11,11 @@ services:
         value: production
       - key: AUTH_SECRET
         generateValue: true
-      - key: DB_HOST
+      - key: DATABASE_URL
         sync: false
-      - key: DB_PORT
-        value: "3306"
-      - key: DB_USER
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
-      - key: DB_NAME
-        value: rice_ai
-      - key: DB_SSL_CA
-        sync: false
+      - key: DATABASE_SSL
+        value: "true"
+      - key: DATABASE_SSL_REJECT_UNAUTHORIZED
+        value: "true"
       - key: FRONTEND_URL
         sync: false

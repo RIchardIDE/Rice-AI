@@ -67,7 +67,7 @@ Rice AI Analysis ถูกออกแบบให้เป็นศูนย์
 - **Backend:** Node.js, Express.js
 - **Frontend:** HTML, JavaScript
 - **Styling:** Tailwind CSS, PostCSS
-- **Database:** MySQL ผ่าน `mysql2`
+- **Database:** Neon PostgreSQL ผ่าน `pg`
 - **Security & Utilities:** Bcrypt, Multer, Nodemailer, CORS
 
 ### AI & Machine Learning
@@ -79,7 +79,7 @@ Rice AI Analysis ถูกออกแบบให้เป็นศูนย์
 
 ## 🗄️ Database Schema
 
-ระบบใช้ MySQL ผ่าน `mysql2` สำหรับจัดเก็บข้อมูลของระบบ โดยมีข้อมูลหลักดังนี้:
+ระบบใช้ Neon PostgreSQL ผ่าน `pg` สำหรับจัดเก็บข้อมูลของระบบ โดยมีข้อมูลหลักดังนี้:
 
 - `users` — ข้อมูลสมาชิกและบทบาทผู้ใช้งาน
 - `history` — ประวัติผลการวิเคราะห์ ภาพ ค่าความมั่นใจ พิกัด และสถานะเคส
@@ -100,15 +100,17 @@ Rice AI Analysis ถูกออกแบบให้เป็นศูนย์
 
 - **Frontend:** Vercel builds the multi-page Vite frontend from the repository.
 - **Backend:** Render runs the Node.js API and Python/TensorFlow inference service with the included `Dockerfile`.
-- **Database:** MySQL is provided as an external managed database; credentials are configured through Render environment variables.
+- **Database:** Neon PostgreSQL is provided as an external managed database; the connection string is configured through Render environment variables.
 - **Frontend API URL:** Set `VITE_API_URL` in Vercel to the public Render backend URL before deploying.
 - **CORS:** Set `FRONTEND_URL` in Render to the Vercel project URL.
 - **Database migration:** Run `rice_ai.sql`, then `migrations/001_add_banned_to_users.sql` for the account suspension column.
+- **Neon schema:** The deployable PostgreSQL schema is `rice_ai.sql`; `rice_ai.mysql.legacy.sql` is retained only as a reference for the former MariaDB schema.
+- **Password security:** Passwords are stored only as one-way `bcrypt` hashes; plaintext passwords are never written to the database.
 
 ## Development and Production
 
-- **Development:** use `.env.development` with the separate `rice_ai_dev` database and run `npm run dev:full`.
-- **Production:** Render runs `npm start` with `NODE_ENV=production`; missing database credentials, CORS origin, or `AUTH_SECRET` stops the service from starting.
+- **Development:** use `.env.development` with a separate PostgreSQL database and run `npm run dev:full`.
+- **Production:** Render runs `npm start` with `NODE_ENV=production`; missing `DATABASE_URL`, CORS origin, or `AUTH_SECRET` stops the service from starting.
 - **Vercel:** set `VITE_API_URL` to the public Render URL and keep production secrets in the platform environment settings.
 - Authentication uses short-lived signed tokens, role checks, ownership checks, rate limiting, security headers, and restricted image uploads.
 - Never commit real `.env` files, database passwords, API keys, or production user data.

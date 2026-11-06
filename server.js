@@ -5,7 +5,7 @@ import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import mysql from 'mysql2/promise';
+import pg from 'pg';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';    
 import helmet from 'helmet';
@@ -20,7 +20,7 @@ const port = Number(process.env.PORT || 3000);
 const authSecret = process.env.AUTH_SECRET || crypto.randomBytes(32).toString('hex');
 
 if (isProduction) {
-    const requiredProductionEnv = ['AUTH_SECRET', 'DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME', 'FRONTEND_URL'];
+    const requiredProductionEnv = ['AUTH_SECRET', 'DATABASE_URL', 'FRONTEND_URL'];
     const missingProductionEnv = requiredProductionEnv.filter(key => !process.env[key]);
     if (missingProductionEnv.length || process.env.AUTH_SECRET.length < 32) {
         throw new Error(`Missing or invalid production environment variables: ${missingProductionEnv.join(', ') || 'AUTH_SECRET'}`);
@@ -76,36 +76,55 @@ const canAccessUser = (req, userId) =>
     ['admin', 'expert'].includes(req.user?.role) || Number(req.user?.id) === Number(userId);
 
 const validPassword = value => typeof value === 'string' && value.length >= 8 && value.length <= 128;
+const passwordHashRounds = 12;
 
-const dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USER || '',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'rice_ai',
-    ssl: process.env.DB_SSL_CA
-        ? { ca: process.env.DB_SSL_CA, rejectUnauthorized: true }
-        : (isProduction ? { rejectUnauthorized: false } : undefined),
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+const { Pool } = pg;
+const databaseUrl = process.env.DATABASE_URL || '';
+const useDatabaseSsl = process.env.DATABASE_SSL === 'true' || isProduction;
+const databasePool = new Pool({
+    connectionString: databaseUrl || undefined,
+    max: 10,
+    idleTimeoutMillis: 30_000,
+    connectionTimeoutMillis: 10_000,
+    ssl: useDatabaseSsl
+        ? { rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false' }
+        : undefined
+});
+
+// Convert the existing parameterized queries from MySQL's ? syntax to PostgreSQL's $1, $2, ... syntax.
+const toPostgresQuery = (sql) => {
+    let index = 0;
+    return sql.replace(/\?/g, () => `$${++index}`);
 };
 
+// Keep the current [rows] / [result] call shape while using node-postgres underneath.
+const databaseQuery = async (sql, values = []) => {
+    const result = await databasePool.query(toPostgresQuery(sql), values);
+    const isReadQuery = /^\s*(SELECT|WITH|SHOW|EXPLAIN)\b/i.test(sql);
+    if (isReadQuery) return [result.rows];
+    return [{
+        affectedRows: result.rowCount,
+        rowCount: result.rowCount,
+        insertId: result.rows[0]?.id
+    }];
+};
 
-const pool = mysql.createPool(dbConfig);
+const pool = {
+    query: databaseQuery,
+    execute: databaseQuery
+};
 
-// เช็คการเชื่อมต่อเมื่อมีการตั้งค่า database ครบถ้วน
-if (dbConfig.user) {
-    pool.getConnection()
-        .then(conn => {
-            console.log('✅ Connected to MySQL Database successfully!');
-            conn.release();
+// เช็คการเชื่อมต่อเมื่อมีการตั้งค่า DATABASE_URL ครบถ้วน
+if (databaseUrl) {
+    databasePool.query('SELECT 1')
+        .then(() => {
+            console.log('✅ Connected to Neon PostgreSQL successfully!');
         })
         .catch(err => {
             console.error('❌ Database Connection Failed:', err.message);
         });
 } else {
-    console.warn('⚠️ Database credentials are not configured. Set DB_HOST, DB_USER, DB_PASSWORD and DB_NAME.');
+    console.warn('⚠️ Database credentials are not configured. Set DATABASE_URL.');
 }
 
 const allowedOrigins = (process.env.FRONTEND_URL || '')
@@ -278,6 +297,7 @@ app.post('/save-history', async (req, res) => {
             INSERT INTO history 
             (user_id, latitude, longitude, location_name, variety_code, disease, confidence, image_base64, status, timestamp, weather) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            RETURNING id
         `;
 
         const [result] = await pool.execute(sql, [
@@ -381,7 +401,7 @@ app.post('/register', async (req, res) => {
     }
 
     try {
-        const hash = await bcrypt.hash(password, 10);
+        const hash = await bcrypt.hash(password, passwordHashRounds);
         const sql = "INSERT INTO users (username, password, first_name, last_name, email, phone, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
         await pool.query(sql, [username, hash, first_name, last_name, email, phone, 'farmer']);
 
@@ -389,7 +409,7 @@ app.post('/register', async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        if (err.code === 'ER_DUP_ENTRY') {
+        if (err.code === '23505') {
             return res.status(400).json({ success: false, message: 'ชื่อผู้ใช้หรืออีเมลนี้ถูกใช้งานแล้ว' });
         }
         res.status(500).json({ success: false, message: 'Server error: ' + err.message });
@@ -442,7 +462,7 @@ app.post('/update-user', async (req, res) => {
         const { id, first_name, last_name, new_password } = req.body;
 
         if (new_password) {
-            const salt = await bcrypt.genSalt(10);
+            const salt = await bcrypt.genSalt(passwordHashRounds);
             const hashedPassword = await bcrypt.hash(new_password, salt);
             await pool.execute("UPDATE users SET first_name = ?, last_name = ?, password = ? WHERE id = ?", [first_name, last_name, hashedPassword, id]);
         } else {
@@ -523,7 +543,7 @@ app.post('/update-account-settings', async (req, res) => {
 
         // 4. กรณีเปลี่ยนรหัสผ่าน
         if (new_password) {
-            const salt = await bcrypt.genSalt(10);
+            const salt = await bcrypt.genSalt(passwordHashRounds);
             const hash = await bcrypt.hash(new_password, salt);
             await pool.execute("UPDATE users SET password = ? WHERE id = ?", [hash, id]);
         }
@@ -635,7 +655,7 @@ app.get('/admin/dashboard-overview', async (req, res) => {
         const [totalUsers] = await pool.query("SELECT COUNT(*) as count FROM users WHERE role != 'admin'");
 
         // 2. นับจำนวนวิเคราะห์โรค "วันนี้"
-        const [dailyScans] = await pool.query("SELECT COUNT(*) as count FROM history WHERE DATE(timestamp) = CURDATE()");
+        const [dailyScans] = await pool.query("SELECT COUNT(*) as count FROM history WHERE timestamp::date = CURRENT_DATE");
 
         // 3. ดึงรายการวิเคราะห์ล่าสุด (Real-time Table) 
         const [recentScans] = await pool.query(`
@@ -649,8 +669,8 @@ app.get('/admin/dashboard-overview', async (req, res) => {
         const [diseaseStats] = await pool.query(`
             SELECT disease, COUNT(*) as count 
             FROM history 
-            WHERE MONTH(timestamp) = MONTH(CURRENT_DATE()) 
-            AND YEAR(timestamp) = YEAR(CURRENT_DATE())
+            WHERE EXTRACT(MONTH FROM timestamp) = EXTRACT(MONTH FROM CURRENT_DATE)
+            AND EXTRACT(YEAR FROM timestamp) = EXTRACT(YEAR FROM CURRENT_DATE)
             -- ❌ ลบบรรทัด AND disease NOT LIKE ออก เพื่อให้ข้อมูลข้าวปกติไหลเข้ามาด้วย
             GROUP BY disease
         `);
@@ -773,7 +793,7 @@ app.post('/admin/add-user', async (req, res) => {
             return res.status(400).json({ success: false, message: "Username นี้มีผู้ใช้งานแล้ว" });
         }
         // 2. เข้ารหัส 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, passwordHashRounds);
 
         // 3. บันทึก
         const sql = `INSERT INTO users (username, password, first_name, last_name, role) VALUES (?, ?, ?, ?, ?)`;
@@ -848,10 +868,10 @@ app.get('/admin/get-dashboard-stats', async (req, res) => {
 
         // 6. ข้อมูลสำหรับ Bar Chart (สถิติย้อนหลัง 7 วัน)
         const [usageBar] = await pool.query(`
-            SELECT DATE_FORMAT(timestamp, '%d/%m') as date, COUNT(*) as count 
+            SELECT TO_CHAR(timestamp, 'DD/MM') as date, COUNT(*) as count
             FROM history 
-            WHERE timestamp >= DATE(NOW()) - INTERVAL 7 DAY 
-            GROUP BY DATE(timestamp) 
+            WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
+            GROUP BY timestamp::date, TO_CHAR(timestamp, 'DD/MM')
             ORDER BY timestamp ASC
         `);
 
@@ -927,7 +947,7 @@ app.get('/admin/messages', async (req, res) => {
         const sql = `
             SELECT m.*, u.id as user_id_from_db 
             FROM messages m 
-            LEFT JOIN users u ON m.sender_name COLLATE utf8mb4_unicode_ci = CONCAT(u.first_name, ' ', u.last_name) COLLATE utf8mb4_unicode_ci
+            LEFT JOIN users u ON m.sender_name = CONCAT_WS(' ', u.first_name, u.last_name)
             ORDER BY m.created_at DESC
         `;
         
@@ -1305,7 +1325,7 @@ app.post('/reset-password', async (req, res) => {
     try {
         const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
         const [rows] = await pool.query(
-            'SELECT * FROM password_resets WHERE token = ? AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1',
+            'SELECT * FROM password_resets WHERE token = ? AND expires_at > CURRENT_TIMESTAMP ORDER BY created_at DESC LIMIT 1',
             [tokenHash]
         );
 
@@ -1315,7 +1335,7 @@ app.post('/reset-password', async (req, res) => {
 
         const userId = rows[0].user_id;
 
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const hashedPassword = await bcrypt.hash(newPassword, passwordHashRounds);
         await pool.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userId]);
         await pool.query('DELETE FROM password_resets WHERE token = ?', [tokenHash]);
         res.json({ success: true, message: 'เปลี่ยนรหัสผ่านสำเร็จ' });
