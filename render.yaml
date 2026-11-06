@@ -21,5 +21,7 @@ services:
         sync: false
       - key: DB_NAME
         value: rice_ai
+      - key: DB_SSL_CA
+        sync: false
       - key: FRONTEND_URL
         sync: false

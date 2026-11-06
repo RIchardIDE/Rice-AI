@@ -83,6 +83,9 @@ const dbConfig = {
     user: process.env.DB_USER || '',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'rice_ai',
+    ssl: process.env.DB_SSL_CA
+        ? { ca: process.env.DB_SSL_CA, rejectUnauthorized: true }
+        : (isProduction ? { rejectUnauthorized: false } : undefined),
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
