@@ -130,6 +130,7 @@ if (databaseUrl) {
 const allowedOrigins = (process.env.FRONTEND_URL || '')
     .split(',')
     .map(origin => origin.trim())
+    .map(origin => origin.replace(/\/+$/, ''))
     .filter(Boolean);
 app.use(cors({
     origin: (origin, callback) => {
