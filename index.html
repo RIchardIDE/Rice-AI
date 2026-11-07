@@ -117,7 +117,12 @@
                             <i class="fa-solid fa-lock text-lg"></i>
                         </span>
                         <input type="password" id="password" placeholder="กรอกรหัสผ่าน"
-                            class="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition font-medium" />
+                            class="w-full pl-12 pr-12 py-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition font-medium" />
+                        <button type="button" id="toggle-password" aria-label="แสดงรหัสผ่าน"
+                            class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-primary focus:outline-none"
+                            onclick="togglePasswordVisibility('password', 'toggle-password')">
+                            <i id="toggle-password-icon" class="fa-solid fa-eye"></i>
+                        </button>
                     </div>
                     <div class="text-right mt-2">
                         <a href="forgetP.html" class="text-sm text-primary hover:underline font-bold">ลืมรหัสผ่าน?</a>
@@ -142,6 +147,18 @@
 <script type="module" src="/src/main.js"></script>
 
 <script>
+    function togglePasswordVisibility(inputId, buttonId) {
+        const input = document.getElementById(inputId);
+        const button = document.getElementById(buttonId);
+        const icon = button?.querySelector('i');
+        if (!input || !button || !icon) return;
+
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        icon.className = isPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+        button.setAttribute('aria-label', isPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน');
+    }
+
     async function handleLogin(e) {
         e.preventDefault();
 
