@@ -246,8 +246,21 @@ app.post('/predict', upload.single('image'), (req, res) => {
     pythonProcess.stderr.on('data', (data) => console.error(`🔥 Python Error: ${data}`));
     pythonProcess.stdout.on('data', (data) => resultData += data.toString());
 
+    pythonProcess.on('error', (error) => {
+        console.error('❌ Python process failed to start:', error);
+        try { fs.unlinkSync(imagePath); } catch (e) { }
+        if (!res.headersSent) {
+            res.status(500).json({ success: false, message: 'ไม่สามารถเริ่มระบบ AI ได้' });
+        }
+    });
+
     pythonProcess.on('close', (code) => {
         try { fs.unlinkSync(imagePath); } catch (e) { }
+
+        if (code !== 0 && !resultData && !res.headersSent) {
+            console.error(`❌ Python process exited with code ${code}`);
+            return res.status(500).json({ success: false, message: 'ระบบ AI หยุดทำงานระหว่างประมวลผล กรุณาตรวจสอบ Render logs' });
+        }
 
         try {
             if (!resultData) throw new Error("No data received from Python");

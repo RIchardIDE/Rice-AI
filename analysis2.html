@@ -520,7 +520,14 @@
                     return fetch((window.RICE_API_URL || '') + '/predict', {
                         method: 'POST',
                         body: formData
-                    }).then(res => res.json());
+                    }).then(async res => {
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) {
+                            throw new Error(data.message || data.error || `Server response: ${res.status}`);
+                        }
+                        if (data.error) throw new Error(data.error);
+                        return data;
+                    });
                 });
 
                 const results = await Promise.all(promises);
@@ -532,7 +539,7 @@
 
             } catch (error) {
                 console.error(error);
-                alert("เกิดข้อผิดพลาดในการเชื่อมต่อ Server");
+                alert(`เกิดข้อผิดพลาดในการวิเคราะห์: ${error.message || 'ไม่สามารถเชื่อมต่อ Server ได้'}`);
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
