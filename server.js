@@ -238,7 +238,11 @@ const upload = multer({ dest: uploadsDir, ...imageUploadOptions });
 app.post('/predict', upload.single('image'), (req, res) => {
     if (!req.file) return res.status(400).send("กรุณาอัปโหลดรูปภาพ");
 
-    const imagePath = path.join(__dirname, req.file.path);
+    // Multer already stores an absolute path when `dest` is an absolute directory.
+    // Do not prefix it with __dirname, otherwise Render gets /app/app/uploads/....
+    const imagePath = path.isAbsolute(req.file.path)
+        ? req.file.path
+        : path.join(__dirname, req.file.path);
     const pythonProcess = spawn('python', ['predict.py', imagePath]);
 
     let resultData = "";
