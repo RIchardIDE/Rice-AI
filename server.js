@@ -296,10 +296,11 @@ app.post('/save-history', async (req, res) => {
         const latVal = (latitude && !isNaN(latitude)) ? parseFloat(latitude) : null;
         const lngVal = (longitude && !isNaN(longitude)) ? parseFloat(longitude) : null;
 
-        let confidenceValue = 0;
-        if (confidence) {
-            confidenceValue = parseFloat(confidence.replace('%', ''));
-        }
+        const confidenceText = String(confidence ?? '').replace('%', '').trim();
+        const parsedConfidence = Number.parseFloat(confidenceText);
+        const confidenceValue = Number.isFinite(parsedConfidence)
+            ? Math.min(100, Math.max(0, parsedConfidence))
+            : 0;
 
         let status = 'completed';
         if (confidenceValue <= 60) {
@@ -320,7 +321,7 @@ app.post('/save-history', async (req, res) => {
 
         const [result] = await pool.execute(sql, [
             userIdToSave, latVal, lngVal, location_name, variety_code,
-            disease, confidence, image_base64, status, saveTime,
+            disease, confidenceValue, image_base64, status, saveTime,
             weather || 'ไม่ระบุ'
         ]);
 
