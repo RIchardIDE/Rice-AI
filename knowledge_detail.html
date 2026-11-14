@@ -154,7 +154,9 @@ const API_URL = window.RICE_API_URL || '';
         function renderData(item) {
             document.getElementById('article-content').classList.remove('hidden');
 
-            const imgUrl = item.thumbnail ? `${API_URL}/uploads/${item.thumbnail}` : '/image/logo.png';
+            const imgUrl = item.has_thumbnail_data
+                ? `${API_URL}/article-images/${item.id}`
+                : (item.thumbnail ? `${API_URL}/uploads/${item.thumbnail}` : '/image/logo.png');
             document.getElementById('view-image').src = imgUrl;
             document.getElementById('view-title').innerText = item.title;
             document.getElementById('view-body').innerHTML = item.content.replace(/\n/g, '<br>');

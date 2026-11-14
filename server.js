@@ -139,6 +139,10 @@ const pool = {
 // เช็คการเชื่อมต่อเมื่อมีการตั้งค่า DATABASE_URL ครบถ้วน
 if (databaseUrl) {
     databasePool.query('SELECT 1')
+        .then(() => databasePool.query(`
+            ALTER TABLE articles ADD COLUMN IF NOT EXISTS thumbnail_data bytea;
+            ALTER TABLE articles ADD COLUMN IF NOT EXISTS thumbnail_mime varchar(100);
+        `))
         .then(() => {
             console.log('✅ Connected to Neon PostgreSQL successfully!');
         })
@@ -206,6 +210,7 @@ const publicApiRequest = req => (
     (req.method === 'GET' && req.path === '/health') ||
     (req.method === 'POST' && ['/login', '/register', '/forgot-password', '/reset-password', '/api/contact'].includes(req.path)) ||
     (req.method === 'GET' && req.path === '/get-global-outbreak') ||
+    (req.method === 'GET' && /^\/article-images\/\d+$/.test(req.path)) ||
     (req.method === 'GET' && /^\/admin\/articles(?:\/\d+)?$/.test(req.path)) ||
     (req.method === 'PUT' && /^\/articles\/increment-view\/\d+$/.test(req.path))
 );
@@ -500,7 +505,8 @@ app.post('/register', async (req, res) => {
 //เข้าสู่ระบบ
 app.post('/login', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const username = String(req.body.username || '').trim();
+        const password = String(req.body.password || '').trim();
 
         const [users] = await pool.query("SELECT * FROM users WHERE username = ?", [username]);
         if (users.length === 0) {
@@ -1176,9 +1182,29 @@ const articleStorage = multer.diskStorage({
 const uploadArticle = multer({ storage: articleStorage, ...imageUploadOptions });
 
 // 1. ดึงบทความทั้งหมด (GET)
+app.get('/article-images/:id', async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            'SELECT thumbnail_data, thumbnail_mime FROM articles WHERE id = ?',
+            [req.params.id]
+        );
+        const image = rows[0];
+        if (!image?.thumbnail_data) return res.status(404).end();
+        res.type(image.thumbnail_mime || 'image/jpeg').send(image.thumbnail_data);
+    } catch (error) {
+        console.error('Article image error:', error);
+        res.status(500).end();
+    }
+});
+
 app.get('/admin/articles', async (req, res) => {
     try {
-        const [rows] = await pool.query("SELECT * FROM articles ORDER BY created_at DESC");
+        const [rows] = await pool.query(`
+            SELECT id, title, description, category, content, thumbnail, views,
+                   created_at, updated_at,
+                   (thumbnail_data IS NOT NULL) AS has_thumbnail_data
+            FROM articles ORDER BY created_at DESC
+        `);
         res.json({ success: true, data: rows });
     } catch (err) {
         console.error(err);
@@ -1189,7 +1215,12 @@ app.get('/admin/articles', async (req, res) => {
 // 2. ดึงบทความเพื่อแก้ไข (GET by ID)
 app.get('/admin/articles/:id', async (req, res) => {
     try {
-        const [rows] = await pool.query("SELECT * FROM articles WHERE id = ?", [req.params.id]);
+        const [rows] = await pool.query(`
+            SELECT id, title, description, category, content, thumbnail, views,
+                   created_at, updated_at,
+                   (thumbnail_data IS NOT NULL) AS has_thumbnail_data
+            FROM articles WHERE id = ?
+        `, [req.params.id]);
         if (rows.length > 0) {
             res.json({ success: true, data: rows[0] });
         } else {
@@ -1205,6 +1236,8 @@ app.post('/admin/articles', uploadArticle.single('image'), async (req, res) => {
 
     const { title, description, category, content } = req.body; 
     const thumbnail = req.file ? req.file.filename : null;
+    const thumbnailData = req.file ? fs.readFileSync(req.file.path) : null;
+    const thumbnailMime = req.file?.mimetype || null;
 
     if (!title || !category) {
         return res.status(400).json({ success: false, message: 'กรุณากรอกหัวข้อและหมวดหมู่' });
@@ -1212,8 +1245,9 @@ app.post('/admin/articles', uploadArticle.single('image'), async (req, res) => {
 
     try {
 
-        const sql = `INSERT INTO articles (title, description, category, content, thumbnail, created_at) VALUES (?, ?, ?, ?, ?, NOW())`;
-        await pool.query(sql, [title, description, category, content, thumbnail]);
+        const sql = `INSERT INTO articles (title, description, category, content, thumbnail, thumbnail_data, thumbnail_mime, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`;
+        await pool.query(sql, [title, description, category, content, thumbnail, thumbnailData, thumbnailMime]);
+        if (req.file) fs.unlinkSync(req.file.path);
         res.json({ success: true, message: 'เพิ่มบทความเรียบร้อย' });
     } catch (err) {
         console.error(err);
@@ -1230,7 +1264,7 @@ app.post('/admin/articles/update', uploadArticle.single('image'), async (req, re
             return res.status(400).json({ success: false, message: 'ข้อมูลบทความไม่ครบถ้วน' });
         }
 
-        const [existingRows] = await pool.query('SELECT thumbnail FROM articles WHERE id = ?', [id]);
+        const [existingRows] = await pool.query('SELECT thumbnail, thumbnail_data, thumbnail_mime FROM articles WHERE id = ?', [id]);
         if (existingRows.length === 0) {
             if (req.file) fs.unlinkSync(req.file.path);
             return res.status(404).json({ success: false, message: 'ไม่พบบทความที่ต้องการแก้ไข' });
@@ -1239,8 +1273,11 @@ app.post('/admin/articles/update', uploadArticle.single('image'), async (req, re
         // Use the server/database filename, never a browser-local path.
         const previousThumbnail = existingRows[0].thumbnail || old_image || null;
         const thumbnail = req.file ? req.file.filename : previousThumbnail;
-        const sql = `UPDATE articles SET title=?, description=?, category=?, content=?, thumbnail=?, updated_at=NOW() WHERE id=?`;
-        await pool.query(sql, [title, description, category, content, thumbnail, id]);
+        const thumbnailData = req.file ? fs.readFileSync(req.file.path) : existingRows[0].thumbnail_data;
+        const thumbnailMime = req.file ? req.file.mimetype : existingRows[0].thumbnail_mime;
+        const sql = `UPDATE articles SET title=?, description=?, category=?, content=?, thumbnail=?, thumbnail_data=?, thumbnail_mime=?, updated_at=NOW() WHERE id=?`;
+        await pool.query(sql, [title, description, category, content, thumbnail, thumbnailData, thumbnailMime, id]);
+        if (req.file) fs.unlinkSync(req.file.path);
         if (req.file && previousThumbnail && previousThumbnail !== thumbnail) {
             const previousPath = path.join(uploadsDir, path.basename(previousThumbnail));
             try { fs.unlinkSync(previousPath); } catch (error) { }

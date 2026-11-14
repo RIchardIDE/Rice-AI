@@ -167,8 +167,8 @@
         btn.disabled = true;
         btn.classList.add('opacity-75', 'cursor-not-allowed');
 
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
 
         try {
             const res = await fetch((window.RICE_API_URL || '') + '/login', {

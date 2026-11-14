@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS articles (
     category varchar(30) DEFAULT 'disease' CHECK (category IN ('disease', 'pest', 'fertilizer', 'care')),
     content text,
     thumbnail varchar(255),
+    thumbnail_data bytea,
+    thumbnail_mime varchar(100),
     views integer NOT NULL DEFAULT 0,
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
