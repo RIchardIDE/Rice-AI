@@ -18,6 +18,28 @@ const app = express();
 const isProduction = process.env.NODE_ENV === 'production';
 const port = Number(process.env.PORT || 3000);
 const authSecret = process.env.AUTH_SECRET || crypto.randomBytes(32).toString('hex');
+const aiServicePort = Number(process.env.AI_SERVICE_PORT || 8000);
+const aiServiceUrl = `http://127.0.0.1:${aiServicePort}`;
+
+let aiServiceProcess;
+if (process.env.AI_SERVICE_ENABLED !== 'false') {
+    aiServiceProcess = spawn('python', [
+        '-m', 'uvicorn', 'ai_service:app',
+        '--host', '127.0.0.1',
+        '--port', String(aiServicePort)
+    ], { cwd: __dirname, stdio: ['ignore', 'pipe', 'pipe'] });
+
+    aiServiceProcess.stdout.on('data', data => console.log(`[AI] ${data.toString().trim()}`));
+    aiServiceProcess.stderr.on('data', data => console.error(`[AI] ${data.toString().trim()}`));
+    aiServiceProcess.on('error', error => console.error('AI service failed to start:', error));
+    aiServiceProcess.on('exit', (code, signal) => {
+        if (code !== 0) console.error(`AI service stopped (code=${code}, signal=${signal})`);
+    });
+
+    const stopAiService = () => aiServiceProcess?.kill('SIGTERM');
+    process.once('SIGINT', stopAiService);
+    process.once('SIGTERM', stopAiService);
+}
 
 if (isProduction) {
     const requiredProductionEnv = ['AUTH_SECRET', 'DATABASE_URL', 'FRONTEND_URL'];
@@ -235,7 +257,47 @@ const upload = multer({ dest: uploadsDir, ...imageUploadOptions });
 // ==========================================
 // 1. API Predict (วิเคราะห์โรค)
 // ==========================================
-app.post('/predict', upload.single('image'), (req, res) => {
+app.post('/predict', upload.single('image'), async (req, res) => {
+    if (!req.file) return res.status(400).json({ success: false, message: 'กรุณาอัปโหลดรูปภาพ' });
+
+    const imagePath = req.file.path;
+    try {
+        const imageBytes = fs.readFileSync(imagePath);
+        const formData = new FormData();
+        formData.append('file', new Blob([imageBytes], { type: req.file.mimetype }), req.file.originalname);
+
+        const aiResponse = await fetch(`${aiServiceUrl}/predict`, {
+            method: 'POST',
+            body: formData,
+            signal: AbortSignal.timeout(90_000)
+        });
+        const result = await aiResponse.json().catch(() => ({}));
+
+        if (!aiResponse.ok) {
+            return res.status(aiResponse.status).json({
+                success: false,
+                message: result.detail || 'ระบบ AI ไม่สามารถประมวลผลได้'
+            });
+        }
+
+        console.log(`✅ AI Result: ${result.disease} (${result.confidence})`);
+        res.json(result);
+    } catch (error) {
+        console.error('AI request error:', error);
+        const isTimeout = error.name === 'TimeoutError' || error.name === 'AbortError';
+        res.status(isTimeout ? 504 : 503).json({
+            success: false,
+            message: isTimeout
+                ? 'ระบบ AI ใช้เวลาประมวลผลนานเกินไป'
+                : 'ระบบ AI ยังไม่พร้อมใช้งาน กรุณาลองใหม่อีกครั้ง'
+        });
+    } finally {
+        try { fs.unlinkSync(imagePath); } catch (error) { }
+    }
+});
+
+// Legacy CLI endpoint retained temporarily for rollback/debugging.
+app.post('/predict-legacy', upload.single('image'), (req, res) => {
     if (!req.file) return res.status(400).send("กรุณาอัปโหลดรูปภาพ");
 
     // Multer already stores an absolute path when `dest` is an absolute directory.
@@ -774,6 +836,45 @@ app.post('/admin/ban-user/:id', async (req, res) => {
 });
 
 // ลบ User 
+// ยกเลิกการระงับบัญชีผู้ใช้ (Admin เท่านั้น)
+app.post('/admin/unban-user/:id', async (req, res) => {
+    try {
+        const [result] = await pool.query("UPDATE users SET banned = 0 WHERE id = ? AND role != 'admin'", [req.params.id]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้หรือไม่สามารถแก้ไขบัญชี Admin ได้' });
+        }
+        res.json({ success: true, message: 'ยกเลิกการระงับบัญชีเรียบร้อยแล้ว' });
+    } catch (error) {
+        console.error('Unban User Error:', error);
+        res.status(500).json({ success: false, message: 'ยกเลิกการระงับบัญชีไม่สำเร็จ' });
+    }
+});
+
+// เปลี่ยน Role ผู้ใช้ (Admin เท่านั้น)
+app.patch('/admin/update-user-role/:id', async (req, res) => {
+    try {
+        const { role } = req.body;
+        const targetId = Number(req.params.id);
+        const allowedRoles = ['farmer', 'expert', 'admin'];
+
+        if (!Number.isInteger(targetId) || !allowedRoles.includes(role)) {
+            return res.status(400).json({ success: false, message: 'Role หรือ ID ผู้ใช้ไม่ถูกต้อง' });
+        }
+        if (targetId === Number(req.user.id)) {
+            return res.status(400).json({ success: false, message: 'ไม่สามารถเปลี่ยน Role ของบัญชีตัวเองได้' });
+        }
+
+        const [result] = await pool.query('UPDATE users SET role = ? WHERE id = ?', [role, targetId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้รายนี้' });
+        }
+        res.json({ success: true, message: 'เปลี่ยน Role เรียบร้อยแล้ว' });
+    } catch (error) {
+        console.error('Update User Role Error:', error);
+        res.status(500).json({ success: false, message: 'เปลี่ยน Role ไม่สำเร็จ' });
+    }
+});
+
 app.delete('/admin/delete-user/:id', async (req, res) => {
     try {
         const { id } = req.params;
