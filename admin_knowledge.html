@@ -192,6 +192,7 @@
                         <input type="file" id="inp-image" accept="image/*"
                             class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                             onchange="previewImage()">
+                        <p id="selected-file-name" class="mt-2 text-xs text-gray-500 truncate">ยังไม่ได้เลือกไฟล์</p>
 
                         <div id="preview-box"
                             class="mt-4 hidden w-40 h-40 rounded-xl overflow-hidden border border-gray-200 relative group">
@@ -295,6 +296,7 @@ const API_URL = window.RICE_API_URL || '';
                     document.getElementById('inp-image').value = '';
                     document.getElementById('old-image').value = '';
                     document.getElementById('preview-box').classList.add('hidden');
+                    document.getElementById('selected-file-name').innerText = 'ยังไม่ได้เลือกไฟล์';
                 }
             }
 
@@ -306,6 +308,7 @@ const API_URL = window.RICE_API_URL || '';
             function previewImage() {
                 const file = document.getElementById('inp-image').files[0];
                 if (file) {
+                    document.getElementById('selected-file-name').innerText = `ไฟล์ที่เลือก: ${file.name}`;
                     const reader = new FileReader();
                     reader.onload = function (e) {
                         document.getElementById('img-preview').src = e.target.result;
@@ -376,6 +379,10 @@ const API_URL = window.RICE_API_URL || '';
                 document.getElementById('inp-content').value = item.content;
                 document.getElementById('inp-description').value = item.description || '';
                 document.getElementById('old-image').value = item.thumbnail || '';
+                document.getElementById('inp-image').value = '';
+                document.getElementById('selected-file-name').innerText = item.thumbnail
+                    ? `ไฟล์ปัจจุบัน: ${item.thumbnail}`
+                    : 'ยังไม่ได้เลือกไฟล์ใหม่';
 
                 if (item.thumbnail) {
                     document.getElementById('img-preview').src = `${API_URL}/uploads/${item.thumbnail}`;

@@ -1221,16 +1221,26 @@ app.post('/admin/articles', uploadArticle.single('image'), async (req, res) => {
 app.post('/admin/articles/update', uploadArticle.single('image'), async (req, res) => {
 
     const { id, title, description, category, content, old_image } = req.body;
-    let thumbnail = old_image;
-
-    if (req.file) {
-        thumbnail = req.file.filename;
-    }
-
     try {
-  
+        if (!id || !title || !category) {
+            return res.status(400).json({ success: false, message: 'ข้อมูลบทความไม่ครบถ้วน' });
+        }
+
+        const [existingRows] = await pool.query('SELECT thumbnail FROM articles WHERE id = ?', [id]);
+        if (existingRows.length === 0) {
+            if (req.file) fs.unlinkSync(req.file.path);
+            return res.status(404).json({ success: false, message: 'ไม่พบบทความที่ต้องการแก้ไข' });
+        }
+
+        // Use the server/database filename, never a browser-local path.
+        const previousThumbnail = existingRows[0].thumbnail || old_image || null;
+        const thumbnail = req.file ? req.file.filename : previousThumbnail;
         const sql = `UPDATE articles SET title=?, description=?, category=?, content=?, thumbnail=?, updated_at=NOW() WHERE id=?`;
         await pool.query(sql, [title, description, category, content, thumbnail, id]);
+        if (req.file && previousThumbnail && previousThumbnail !== thumbnail) {
+            const previousPath = path.join(uploadsDir, path.basename(previousThumbnail));
+            try { fs.unlinkSync(previousPath); } catch (error) { }
+        }
         res.json({ success: true, message: 'อัปเดตบทความเรียบร้อย' });
     } catch (err) {
         console.error(err);

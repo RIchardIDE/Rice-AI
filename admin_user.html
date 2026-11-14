@@ -216,6 +216,20 @@
                             class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold uppercase rounded-full border border-green-200">ROLE</span>
                     </div>
 
+                    <div id="detail-role-controls" class="w-full mt-5">
+                        <label for="detail-role-select" class="block text-xs font-bold text-gray-500 mb-1">กำหนด Role</label>
+                        <select id="detail-role-select"
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-semibold focus:ring-2 focus:ring-rice_green focus:outline-none">
+                            <option value="farmer">ผู้ใช้ทั่วไป</option>
+                            <option value="expert">ผู้เชี่ยวชาญ</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <button id="detail-role-btn" type="button"
+                            class="w-full mt-2 bg-rice_green hover:bg-green-700 text-white font-bold py-2 rounded-lg transition">
+                            บันทึก Role
+                        </button>
+                    </div>
+
                     <div class="w-full mt-8 space-y-3">
                         <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
                             <div class="text-gray-400 text-xs mb-1 font-bold uppercase">ประวัติการตรวจ</div>
@@ -358,12 +372,15 @@ const API_URL = window.RICE_API_URL || '';
 
 
                             const row = `
-                        <tr onclick="viewUserDetail(${user.id}, '${user.first_name}', '${user.last_name}', '${user.role}', '${user.username}', '${dateStr}', '${phone}', '${address}')" 
+                        <tr onclick="viewUserDetail(${user.id}, '${user.first_name}', '${user.last_name}', '${user.role}', '${user.username}', '${dateStr}', '${phone}', '${address}', ${Boolean(user.banned)})"
                             class="hover:bg-gray-50 transition cursor-pointer group">
                             <td class="p-4 text-center font-mono text-gray-400">#${user.id}</td> 
                             <td class="p-4 font-bold text-gray-700 group-hover:text-rice_green">${user.username}</td>
                             <td class="p-4">${user.first_name} ${user.last_name}</td>
-                            <td class="p-4"><span class="px-2 py-1 rounded text-xs font-bold ${roleBadge}">${user.role}</span></td>
+                            <td class="p-4">
+                                <span class="px-2 py-1 rounded text-xs font-bold ${roleBadge}">${user.role}</span>
+                                ${user.banned ? '<span class="ml-1 px-2 py-1 rounded text-xs font-bold bg-red-100 text-red-700">ระงับ</span>' : ''}
+                            </td>
                             <td class="p-4 text-gray-500">${dateStr}</td>
                             <td class="p-4 text-center"><div onclick="event.stopPropagation()">${deleteBtn}</div></td>
                         </tr>`;
@@ -382,13 +399,14 @@ const API_URL = window.RICE_API_URL || '';
             // ------------------------------------------
             let currentDetailUserId = null;
 
-            async function viewUserDetail(id, firstname, lastname, role, username, joinedDate, phone, address) {
+            async function viewUserDetail(id, firstname, lastname, role, username, joinedDate, phone, address, banned = false) {
                 currentDetailUserId = id;
 
                 document.getElementById('detail-fullname').innerText = `${firstname} ${lastname}`;
                 document.getElementById('detail-firstname').innerText = firstname;
                 document.getElementById('detail-lastname').innerText = lastname;
                 document.getElementById('detail-role').innerText = role.toUpperCase();
+                document.getElementById('detail-role-select').value = role;
                 document.getElementById('detail-username').innerText = username;
                 document.getElementById('detail-joined').innerText = joinedDate;
                 document.getElementById('detail-avatar').innerText = firstname.charAt(0).toUpperCase();
@@ -417,12 +435,23 @@ const API_URL = window.RICE_API_URL || '';
 
 
                 const banBtn = document.getElementById('detail-ban-btn');
-                if (id === currentUserInfo.id) {
+                if (id === currentUserInfo.id || role === 'admin') {
                     banBtn.style.display = 'none';
                 } else {
                     banBtn.style.display = 'block';
-                    banBtn.onclick = function () { banUser(id, firstname); closeDetailModal(); };
+                    banBtn.innerHTML = banned
+                        ? '<i class="fa-solid fa-unlock"></i> ยกเลิกระงับบัญชี'
+                        : '<i class="fa-solid fa-ban"></i> ระงับบัญชี';
+                    banBtn.onclick = function () {
+                        (banned ? unbanUser : banUser)(id, firstname);
+                        closeDetailModal();
+                    };
                 }
+
+                const roleControls = document.getElementById('detail-role-controls');
+                const roleBtn = document.getElementById('detail-role-btn');
+                roleControls.style.display = id === currentUserInfo.id ? 'none' : 'block';
+                roleBtn.onclick = function () { updateUserRole(id, firstname); };
 
 
 
@@ -519,6 +548,39 @@ const API_URL = window.RICE_API_URL || '';
                     if (json.success) { alert('✅ ระงับบัญชีเรียบร้อยแล้ว'); loadUsers(); }
                     else { alert('❌ ระงับบัญชีไม่สำเร็จ'); }
                 } catch (error) { alert('Server Error'); }
+            }
+
+            async function unbanUser(id, name) {
+                if (!confirm(`ยืนยันยกเลิกการระงับบัญชีของ "${name}" หรือไม่?`)) return;
+                try {
+                    const res = await fetch(`${API_URL}/admin/unban-user/${id}`, { method: 'POST' });
+                    const json = await res.json();
+                    if (json.success) { alert('ยกเลิกการระงับบัญชีเรียบร้อยแล้ว'); loadUsers(); }
+                    else { alert('ไม่สามารถยกเลิกการระงับบัญชีได้: ' + json.message); }
+                } catch (error) { alert('Server Error'); }
+            }
+
+            async function updateUserRole(id, name) {
+                const role = document.getElementById('detail-role-select').value;
+                if (!confirm(`ยืนยันกำหนด Role เป็น "${role}" ให้ ${name} หรือไม่?`)) return;
+
+                try {
+                    const res = await fetch(`${API_URL}/admin/update-user-role/${id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ role })
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        alert('เปลี่ยน Role เรียบร้อยแล้ว');
+                        closeDetailModal();
+                        loadUsers();
+                    } else {
+                        alert('เปลี่ยน Role ไม่สำเร็จ: ' + (json.message || 'เกิดข้อผิดพลาด'));
+                    }
+                } catch (error) {
+                    alert('ไม่สามารถเชื่อมต่อ Server ได้');
+                }
             }
 
             function openMessageModal() {
