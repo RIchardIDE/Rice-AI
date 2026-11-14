@@ -197,7 +197,9 @@ const API_URL = window.RICE_API_URL || '';
                 const res = await fetch(`${API_URL}/admin/get-dashboard-stats`);
                 const json = await res.json();
 
-                if (!json.success) return;
+                if (!res.ok || !json.success) {
+                    throw new Error(json.message || `Stats API returned ${res.status}`);
+                }
 
                 // 1. อัปเดตตัวเลขใน Card
                 document.getElementById('stat-total-scans').innerText = json.stats.scans;
@@ -205,22 +207,25 @@ const API_URL = window.RICE_API_URL || '';
                 document.getElementById('stat-total-users').innerText = json.stats.users;
 
                 // 2. สร้างแผนที่
-                initMap(json.map);
+                initMap(Array.isArray(json.map) ? json.map : []);
 
                 // 3. สร้างกราฟวงกลม
-                initPieChart(json.pie);
+                initPieChart(Array.isArray(json.pie) ? json.pie : []);
 
                 // 4. สร้างกราฟแท่ง
-                initBarChart(json.bar);
+                initBarChart(Array.isArray(json.bar) ? json.bar : []);
 
             } catch (error) {
                 console.error("Load Stats Error:", error);
             }
         }
 
-        function initMap(locations) {
-            const startLat = locations.length > 0 ? locations[0].latitude : 13.7563;
-            const startLng = locations.length > 0 ? locations[0].longitude : 100.5018;
+        function initMap(locations = []) {
+            const validLocations = locations.filter(loc =>
+                Number.isFinite(Number(loc.latitude)) && Number.isFinite(Number(loc.longitude))
+            );
+            const startLat = validLocations.length > 0 ? Number(validLocations[0].latitude) : 13.7563;
+            const startLng = validLocations.length > 0 ? Number(validLocations[0].longitude) : 100.5018;
 
             var map = L.map('disease-map').setView([startLat, startLng], 6);
 
@@ -228,13 +233,13 @@ const API_URL = window.RICE_API_URL || '';
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
 
-            locations.forEach(loc => {
+            validLocations.forEach(loc => {
 
                 const safeName = loc.disease || 'ไม่ทราบสาเหตุ';
                 const isDisease = !['ปกติ', 'Healthy', 'Normal'].includes(safeName);
                 const color = isDisease ? 'red' : 'green';
 
-                L.circleMarker([loc.latitude, loc.longitude], {
+                L.circleMarker([Number(loc.latitude), Number(loc.longitude)], {
                     color: color, fillColor: color, fillOpacity: 0.6, radius: 8
                 }).addTo(map)
                     .bindPopup(`<b>${safeName}</b><br>โดย: ${loc.username || 'ไม่ระบุ'}<br>${new Date(loc.timestamp).toLocaleDateString('th-TH')}`);

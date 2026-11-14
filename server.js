@@ -974,7 +974,7 @@ app.get('/admin/get-dashboard-stats', async (req, res) => {
             SELECT h.id, h.disease, h.latitude, h.longitude, u.username, h.timestamp 
             FROM history h 
             LEFT JOIN users u ON h.user_id = u.id 
-            WHERE h.latitude IS NOT NULL 
+            WHERE h.latitude IS NOT NULL AND h.longitude IS NOT NULL
             ORDER BY h.timestamp DESC LIMIT 100
         `);
 
@@ -988,23 +988,27 @@ app.get('/admin/get-dashboard-stats', async (req, res) => {
 
         // 6. ข้อมูลสำหรับ Bar Chart (สถิติย้อนหลัง 7 วัน)
         const [usageBar] = await pool.query(`
-            SELECT TO_CHAR(timestamp, 'DD/MM') as date, COUNT(*) as count
+            SELECT TO_CHAR(timestamp::date, 'DD/MM') as date, COUNT(*)::int as count
             FROM history 
             WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
-            GROUP BY timestamp::date, TO_CHAR(timestamp, 'DD/MM')
-            ORDER BY timestamp ASC
+            GROUP BY timestamp::date
+            ORDER BY timestamp::date ASC
         `);
 
         res.json({
             success: true,
             stats: {
-                scans: totalScans[0].count,
-                users: totalUsers[0].count,
-                diseases: totalDiseases[0].count
+                scans: Number(totalScans[0].count),
+                users: Number(totalUsers[0].count),
+                diseases: Number(totalDiseases[0].count)
             },
-            map: mapData,
-            pie: diseasePie,
-            bar: usageBar
+            map: mapData.map(item => ({
+                ...item,
+                latitude: Number(item.latitude),
+                longitude: Number(item.longitude)
+            })),
+            pie: diseasePie.map(item => ({ ...item, count: Number(item.count) })),
+            bar: usageBar.map(item => ({ ...item, count: Number(item.count) }))
         });
 
     } catch (error) {
